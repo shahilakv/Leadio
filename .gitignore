@@ -1,0 +1,7 @@
+node_modules/
+.clasp.json
+.clasprc.json
+.deploy.json
+test-results/
+playwright-report/
+.DS_Store

@@ -1,0 +1,19 @@
+{
+  "name": "lead-desk",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Phone-first lead calling app for Meta ad leads, on Google Sheets + Apps Script",
+  "scripts": {
+    "login": "clasp login",
+    "push": "clasp push -f",
+    "deploy": "node scripts/deploy.mjs",
+    "open": "clasp open",
+    "logs": "clasp logs",
+    "preview": "node scripts/preview.mjs",
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@google/clasp": "^2.4.2",
+    "@playwright/test": "^1.48.0"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm test)",
+      "Bash(npm run preview)",
+      "Bash(npm run push)",
+      "Bash(npx playwright test:*)"
+    ],
+    "ask": [
+      "Bash(npm run deploy:*)",
+      "Bash(npx clasp deploy:*)"
+    ]
+  }
+}
