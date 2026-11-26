@@ -24,6 +24,10 @@ A phone-first web app for calling and messaging Meta (Facebook/Instagram) ad lea
 
 `npm run deploy` reads the deployment id from `.deploy.json`. See README.md for first-time setup.
 
+**Vercel is only a short link.** `vercel.json` redirects every path to the Apps Script `/exec` URL (`public/index.html` is a fallback). The app itself never runs on Vercel. If the deployment id ever changes, update the URL in both files.
+
+`.npmrc` sets `node-options=--use-system-ca` so clasp can reach Google when antivirus scans HTTPS ("unable to verify the first certificate").
+
 ## How the data works
 
 - **One tab = one client.** Tabs starting with `_` are ignored.
