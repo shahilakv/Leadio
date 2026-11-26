@@ -69,3 +69,12 @@ test('follow-ups and stats tabs render', async ({ page }) => {
   await page.locator('[data-v="vStats"]').click();
   await expect(page.locator('#stats')).toContainText('Reached');
 });
+
+// Apps Script's HtmlService cuts everything after "//" on a line, even inside strings.
+// Write URLs in the script as 'https:\/\/...' so the script survives that.
+test('script still parses after Apps Script strips // comments', () => {
+  const html = require('node:fs').readFileSync(require('node:path').join(__dirname, '../src/Index.html'), 'utf8');
+  const js = html.slice(html.indexOf('<script>') + 8, html.lastIndexOf('</script>'));
+  const stripped = js.split('\n').map(l => l.replace(/\/\/.*$/, '')).join('\n');
+  expect(() => new Function(stripped)).not.toThrow();
+});

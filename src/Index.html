@@ -345,7 +345,7 @@ function waLink(l, ph) {
   const t = WA_TEXT.replace('{name}', nameOf(l).split(' ')[0])
     .replace('{type}', nice(F(l, 'type')).toLowerCase() || 'rental')
     .replace(' in {city}', F(l, 'city') ? ' in ' + F(l, 'city') : '').replace('{city}', F(l, 'city'));
-  return `https://wa.me/${ph}?text=${encodeURIComponent(t)}`;
+  return `https:\/\/wa.me/${ph}?text=${encodeURIComponent(t)}`;
 }
 
 /* ---------- dates ---------- */
@@ -449,8 +449,8 @@ function emptyFor(k, q) {
 }
 function statusSelect(l, big) {
   const st = statusOf(l), s = sm(st), opts = STATUSES.map(x => x.k); if (!opts.includes(st)) opts.unshift(st);
-  const dot = `url(&quot;data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><circle cx='4' cy='4' r='4' fill='${s.c}'/></svg>`)}&quot;)`;
-  const chev = `url(&quot;data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='${s.c}' stroke-width='2.4' stroke-linecap='round'><path d='m6 9 6 6 6-6'/></svg>`)}&quot;)`;
+  const dot = `url(&quot;data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http:\/\/www.w3.org/2000/svg' viewBox='0 0 8 8'><circle cx='4' cy='4' r='4' fill='${s.c}'/></svg>`)}&quot;)`;
+  const chev = `url(&quot;data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http:\/\/www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='${s.c}' stroke-width='2.4' stroke-linecap='round'><path d='m6 9 6 6 6-6'/></svg>`)}&quot;)`;
   return `<select class="ssel" data-st="${l.row}" aria-label="Status" style="color:${s.c};background-color:${s.t};background-image:${dot},${chev}">${opts.map(k => `<option${k === st ? ' selected' : ''}>${esc(k)}</option>`).join('')}</select>`;
 }
 function actions(l) {

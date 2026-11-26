@@ -74,6 +74,7 @@ The Figma source is "Lead Desk – Mobile App": https://www.figma.com/design/Hce
 
 - `<base target="_top">` must stay. Without it, `tel:` links don't open the dialer from inside the Apps Script iframe.
 - Apps Script iframes usually block the microphone. `dictate()` tries Web Speech, then falls back to telling the user to use the keyboard mic.
+- **Never write `//` inside a string in the `<script>`.** Apps Script's HtmlService cuts every line at `//`, even inside strings, which kills the whole script (blank UI, no leads). Write URLs as `'https:\/\/…'`. A test checks this.
 - Don't use `alert/confirm/prompt`. Use `toast()` and the bottom sheet.
 - Changing `Code.gs` or `appsscript.json` needs `npm run deploy`. `push` alone doesn't update what users of the /exec URL see.
 - Web app access is "Only myself" (`appsscript.json`). Because it runs as the owner, never switch to `ANYONE` without adding real auth: the link would expose every lead.
