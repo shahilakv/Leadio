@@ -14,6 +14,10 @@
 
 const EXTRA_COLS = ['Status', 'Notes', 'Follow Up', 'Attempts', 'Last Called', 'First Called'];
 
+// Meta's ad/form bookkeeping columns. The app never needs them, so they are not sent.
+// "id" is kept: updateLead() uses it to find the right row if the sheet gets sorted.
+const SKIP_COLS = /^(ad_id|ad_name|adset_id|adset_name|campaign_id|form_id|form_name|is_organic|platform|lead_status|inbox_url)$/i;
+
 function doGet() {
   return HtmlService.createHtmlOutputFromFile('Index')
     .setTitle('Lead Desk')
@@ -34,13 +38,17 @@ function getLeads(tab) {
   ensureCols_(sh);
   const values = sh.getDataRange().getDisplayValues();
   if (!values.length) return { headers: [], leads: [] };
-  const headers = values[0].map(h => String(h).trim());
+  const all = values[0].map(h => String(h).trim());
+  const keep = [];
+  all.forEach((h, j) => { if (h && !SKIP_COLS.test(h)) keep.push(j); });
+  const headers = keep.map(j => all[j]);
   const leads = [];
   for (let i = 1; i < values.length; i++) {
     const r = values[i];
     if (!r.some(v => v !== '')) continue;          // skip empty rows
+    if (r.some(v => /^(p:)?<test lead/i.test(v))) continue;  // skip Meta's test leads
     const d = {};
-    headers.forEach((h, j) => { if (h) d[h] = r[j]; });
+    keep.forEach(j => { d[all[j]] = r[j]; });
     leads.push({ row: i + 1, d: d });
   }
   return { headers: headers, leads: leads };

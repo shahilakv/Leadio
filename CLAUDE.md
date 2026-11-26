@@ -28,6 +28,8 @@ A phone-first web app for calling and messaging Meta (Facebook/Instagram) ad lea
 
 - **One tab = one client.** Tabs starting with `_` are ignored.
 - Row 1 is headers. Meta's default headers are auto-detected in `detect()` in Index.html: `full_name`, `phone_number` (Meta adds a `p:` prefix, which gets stripped), `created_time`, `campaign_name`, `city`, and any header containing `furnish`. If a client's form uses other headers, extend the regexes in `detect()`. Don't hard-code columns.
+- `getLeads()` in Code.gs sends only the columns the app needs: `SKIP_COLS` drops Meta's ad/form columns (`ad_id`, `ad_name`, `adset_*`, `campaign_id`, `form_*`, `is_organic`, `platform`, `lead_status`). Rows containing Meta's `<test lead: …>` dummy data are skipped. Row numbers stay the real sheet rows.
+- Ibna's sheet (Oct 2026): `id, created_time, …, campaign_name, …, which_type_of_apartment_you_are_looking_for?, full_name, phone_number, city, lead_status`. The demo data uses the same columns.
 - On first load the app adds these columns at the end: `Status | Notes | Follow Up | Attempts | Last Called | First Called`.
   - `Follow Up` is `YYYY-MM-DD` text, saved as plain text so Sheets doesn't reformat it.
   - `First Called` is an ISO timestamp, used for the "avg time to first call" stat.

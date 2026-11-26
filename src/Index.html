@@ -268,7 +268,7 @@ const STATUSES = [
 /* ============================================ */
 
 const SYS = ['Status', 'Notes', 'Follow Up', 'Attempts', 'Last Called', 'First Called'];
-const HIDE = /(^id$|_id$|^is_organic$|^platform$|^lead_?status$|^inbox_url$)/i;
+const HIDE = /(^id$|_id$|^ad_?name$|^adset_?name$|^form_?name$|^is_organic$|^platform$|^lead_?status$|^inbox_url$)/i;
 const CLOSED = ['Rented', 'Not interested', 'Wrong number'];
 const NOTCONN = ['New', 'No answer'];
 const WARM = ['Interested', 'Visit booked'];
@@ -662,9 +662,10 @@ const DEMO = (() => {
     ['Not interested', '', '1', 'Budget too low'], ['Wrong number', '', '1', ''], ['Interested', y, '1', 'Comparing with another flat nearby'], ['', '', '', '']];
   const rows = names.map((n, i) => { const [s, fu, att, note] = st[i];
     const fc = att ? new Date(Date.now() - (hrs[i] - [0, .3, .9, 0, .2, 2, 1, 3, .1, .5, 4, 0][i]) * 3600e3).toISOString() : '';
-    return { id: String(9000 + i * 7), created_time: iso(hrs[i]), ad_name: 'Ibna video ad', campaign_name: 'Ibna Rent – Video Ad', form_name: 'Ibna rental enquiry', platform: i % 2 ? 'ig' : 'fb',
+    // Same columns the backend sends for the real Ibna sheet (Meta's ad/form columns are dropped in Code.gs).
+    return { id: 'l:' + (9000 + i * 7), created_time: iso(hrs[i]), campaign_name: 'IBNA BUILDERS - 14 oct-2026',
+      'which_type_of_apartment_you_are_looking_for?': i % 3 === 2 ? 'unfurnished' : 'furnished',
       full_name: n, phone_number: 'p:+9198' + String(46012345 + i * 1931).slice(0, 8), city: cities[i % cities.length],
-      'are_you_looking_for_a_furnished_or_non_furnished_apartment?': i % 3 === 2 ? 'non_furnished' : 'furnished',
       Status: s, Notes: note ? (fmtDT(fc || iso(hrs[i] - .5)) + ' — ' + note) : '', 'Follow Up': fu, Attempts: att, 'Last Called': '', 'First Called': fc }; });
   const db = { 'Ibna': rows };
   return {
