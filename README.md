@@ -8,7 +8,7 @@ Built with Next.js on Vercel, Supabase (accounts + database) and the Google Shee
 
 ### 1. Supabase (accounts and database)
 1. Create a free project at https://supabase.com (region close to your users, e.g. Mumbai).
-2. **SQL Editor → New query**: paste all of `supabase/migrations/0001_init.sql` and click **Run**.
+2. **SQL Editor → New query**: paste all of `supabase/migrations/0001_init.sql` and click **Run**. Then do the same with each later file in `supabase/migrations/` (`0002_grants.sql`, …), in order.
 3. **Authentication → Sign In / Providers → Email**: keep **Confirm email** on.
 4. **Authentication → URL Configuration**:
    - **Site URL**: your Vercel URL, e.g. `https://leadio.vercel.app`

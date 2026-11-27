@@ -37,6 +37,7 @@ The full build plan with milestones is in `docs/v3-plan.md`. Milestone 1 (founda
 
 - **Every table has Row Level Security** keyed on membership (`is_member()` / `is_owner()`). New tables must get RLS and policies in a new migration. Never edit an applied migration; add `0002_…sql`.
 - Use `supabaseServer()` (user's session) by default. Use `supabaseAdmin()` only for jobs a user can't do (sync inserting leads, encrypted tokens, invites), and always filter by `company_id`.
+- **New tables need explicit GRANTs** (see `0002_grants.sql`): this Supabase project doesn't grant API roles access by default ("permission denied for table" = missing grant, not RLS). Grant `authenticated` only the columns it needs; never grant to `anon`.
 - Browsers may only update the call columns of `leads` (column grants in `0001_init.sql`). Leads are inserted by server-side sync only.
 - `source_secrets` (OAuth tokens) has no policies on purpose: service role only.
 - Redirect targets from user input go through `safeNext()` in `lib/site.ts`.
