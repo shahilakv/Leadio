@@ -64,6 +64,7 @@ New · No answer · Follow-up · Interested · Visit booked · Converted · Not 
 (v1's "Rented" became "Converted" for multi-company use.)
 
 - **Call list** (default chip on Leads) = status New. The after-call sheet can't be closed without a result and doesn't offer New (server rejects it too), so every logged call removes the lead from the Call list.
+- **Follow-ups tab** = No answer + Follow-up (`FOLLOW_STATUSES`), grouped by follow-up date (Overdue … Later, then "No date set"), with an All / No answer / Follow-up filter. The red tab badge counts these when due today or overdue.
 - **Not connected** = New + No answer
 - **Interested** tile = Interested + Visit booked
 - **Closed** (hidden from follow-ups) = Converted, Not interested, Wrong number

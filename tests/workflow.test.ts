@@ -21,6 +21,7 @@ describe('followGroup', () => {
     expect(followGroup('2026-11-28', NOW)).toBe('Tomorrow');
     expect(followGroup('2026-12-03', NOW)).toBe('This week');
     expect(followGroup('2026-12-20', NOW)).toBe('Later');
+    expect(followGroup(null, NOW)).toBe('No date set');
   });
 });
 

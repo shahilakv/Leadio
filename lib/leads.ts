@@ -16,7 +16,9 @@ export const STATUSES: Status[] = [
 export const NOTCONN = ['New', 'No answer'];
 export const WARM = ['Interested', 'Visit booked'];
 export const CLOSED = ['Converted', 'Not interested', 'Wrong number'];
-export const REACHED = ['Follow-up', 'Interested', 'Visit booked', 'Converted', 'Not interested'];
+// The Follow-ups tab: leads to call again.
+export const FOLLOW_STATUSES = ['No answer', 'Follow-up'];
+export const REACHED =['Follow-up', 'Interested', 'Visit booked', 'Converted', 'Not interested'];
 
 // ---------- field mapping ----------
 // The app's own meaning for a column. Name and phone are required; the rest are optional.
@@ -103,8 +105,9 @@ export function fmtDay(s: string | null | undefined, now = new Date()): string {
 }
 
 // Follow-ups screen groups. Closed leads (Converted, Not interested, Wrong number) are left out.
-export const FOLLOW_GROUPS = ['Overdue', 'Today', 'Tomorrow', 'This week', 'Later'] as const;
-export function followGroup(followUp: string, now = new Date()): typeof FOLLOW_GROUPS[number] {
+export const FOLLOW_GROUPS = ['Overdue', 'Today', 'Tomorrow', 'This week', 'Later', 'No date set'] as const;
+export function followGroup(followUp: string | null, now = new Date()): typeof FOLLOW_GROUPS[number] {
+  if (!followUp) return 'No date set';
   const day = (n: number) => { const d = new Date(now); d.setDate(d.getDate() + n); return ymd(d); };
   if (followUp < day(0)) return 'Overdue';
   if (followUp === day(0)) return 'Today';

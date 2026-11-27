@@ -1,7 +1,7 @@
 import { activeCompany } from '@/lib/company';
 import { supabaseServer } from '@/lib/supabase/server';
 import { loadCtx } from '@/lib/loadLeads';
-import { CLOSED } from '@/lib/leads';
+import { FOLLOW_STATUSES } from '@/lib/leads';
 import { LEAD_COLS, type Lead } from '@/lib/types';
 import FollowUpsView from './FollowUpsView';
 
@@ -12,8 +12,9 @@ export default async function FollowUps() {
   const company = (await activeCompany())!;
   const sb = await supabaseServer();
   const [{ data }, { ctx }] = await Promise.all([
-    sb.from('leads').select(LEAD_COLS).eq('company_id', company.id).not('follow_up', 'is', null)
-      .not('status', 'in', `(${CLOSED.map(s => `"${s}"`).join(',')})`).order('follow_up').limit(2000),
+    // Leads to call again: "No answer" and "Follow-up", soonest follow-up first, undated ones last.
+    sb.from('leads').select(LEAD_COLS).eq('company_id', company.id).in('status', FOLLOW_STATUSES)
+      .order('follow_up', { ascending: true, nullsFirst: false }).order('lead_time', { ascending: false }).limit(3000),
     loadCtx(company),
   ]);
   return <FollowUpsView initial={(data ?? []) as Lead[]} ctx={ctx} />;
