@@ -13,5 +13,5 @@ export async function createCompany(_: FormState, f: FormData): Promise<FormStat
   const { data, error } = await sb.rpc('create_company', { company_name: name });
   if (error) return { error: error.message };
   (await cookies()).set(COMPANY_COOKIE, String(data), { path: '/', sameSite: 'lax', httpOnly: true, secure: true, maxAge: 60 * 60 * 24 * 365 });
-  redirect('/app');
+  redirect('/onboarding/sheet');
 }

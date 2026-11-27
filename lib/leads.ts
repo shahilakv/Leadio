@@ -84,6 +84,16 @@ export function parseDate(s: unknown): Date | null {
   return isNaN(+d) ? null : d;
 }
 export const ymd = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+// "24 Oct, 5:56 pm" (adds the year when it's not this year)
+export function fmtWhen(s: unknown): string {
+  const d = parseDate(s); if (!d) return '';
+  const o: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' };
+  if (d.getFullYear() !== new Date().getFullYear()) o.year = 'numeric';
+  return d.toLocaleString('en-IN', o);
+}
+export const statusOf = (s: string) => STATUSES.find(x => x.k === s) ?? { k: s, c: '#6F737C', t: '#ECEDF0' };
+export const initials = (n: string) => n.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase() || '?';
+
 export function ago(s: unknown, now = Date.now()): string {
   const d = parseDate(s); if (!d) return '';
   const m = (now - +d) / 60000;

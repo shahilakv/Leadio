@@ -2,7 +2,7 @@
 
 A phone-first web app for calling and messaging Meta (Facebook/Instagram) ad leads, built by BBB Integrated. **v3 is a multi-company SaaS:** a user signs up (email verification), creates a company, connects the Google Sheet their Meta ads fill, picks which columns show on the lead card, and the team calls leads from cards with Call, WhatsApp and a status. The first company is **Ibna** (rental apartments).
 
-The full build plan with milestones is in `docs/v3-plan.md`. Milestone 1 (foundation) is done.
+The full build plan with milestones is in `docs/v3-plan.md`. Milestones 1 (foundation) and 2 (connect a sheet by URL, field picker, sync, lead cards) are done.
 
 ## Stack
 
@@ -31,6 +31,10 @@ The full build plan with milestones is in `docs/v3-plan.md`. Milestone 1 (founda
 - `lib/supabase/{client,server,admin}.ts`: browser client, server client (acts as the user, RLS applies), service-role client (server only, bypasses RLS).
 - `lib/company.ts`: `myCompanies()`, `activeCompany()` (cookie `ld_company`).
 - `lib/leads.ts`: `STATUSES` and groups, `guessFieldMap()`, phone helpers, `waText()`, date helpers.
+- `app/onboarding/sheet/`: connect a sheet by URL (`checkSheet` → `inspectTab` → field-picker pop-up → `connectSheet`). Owner only.
+- `app/app/LeadsView.tsx`: tiles, chips, search, lead cards (Call / WhatsApp). Calls `POST /api/sync` on open and every 60s.
+- `lib/google/sheets.ts`: Sheets API as the robot service account (`GOOGLE_SERVICE_ACCOUNT_JSON`, read-only scope). Companies share their sheet with `robotEmail()` as Viewer.
+- `lib/sync.ts`: `syncSource()` upserts sheet rows into `leads` by `(source_id, external_id)`, writing only sheet-derived columns so call results survive. Skips a source synced in the last 45s.
 - `lib/sheets/rows.ts`: `rowsToLeads()` (sheet values → leads: skips empty rows, Meta test leads and duplicates; drops Meta bookkeeping columns via `SKIP_COLS`), `parseSheetUrl()`, `col()`.
 
 ## Data and security rules
