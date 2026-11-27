@@ -18,6 +18,7 @@ export default async function SignUp({ searchParams }: { searchParams: Promise<{
           { name: 'password', label: 'Password (8+ characters)', type: 'password', autoComplete: 'new-password' },
           { name: 'next', label: '', hidden: true, defaultValue: next },
         ]} />
+        <p className="sub" style={{ fontSize: 12.5 }}>By creating an account you agree to the <Link className="link" href="/terms">terms</Link> and <Link className="link" href="/privacy">privacy policy</Link>.</p>
         <p className="row">Already have an account? <Link className="link" href={`/login?next=${encodeURIComponent(next)}`}>Log in</Link></p>
       </div>
     </main>

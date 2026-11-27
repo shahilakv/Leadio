@@ -1,5 +1,6 @@
 import 'server-only';
 import { JWT } from 'google-auth-library';
+import { userRequester } from '@/lib/google/oauth';
 
 // Google Sheets access as our robot (service account). Companies share their sheet with ROBOT email.
 // Read-only: Lead Desk never writes to a company's sheet.
@@ -68,3 +69,19 @@ export function makeSheets(fetcher: Fetcher = googleFetch) {
 }
 
 export const sheets = makeSheets();
+
+// Same client, acting as the Google user who connected the sheet with "Connect Google".
+export function oauthSheets(refreshToken: string) {
+  const request = userRequester(refreshToken);
+  return makeSheets(async url => {
+    try { return await request(url); }
+    catch (e) {
+      const err = e as { response?: { status?: number; data?: { error?: string | { message?: string } } }; message?: string };
+      const status = err.response?.status;
+      const data = err.response?.data?.error;
+      if (data === 'invalid_grant' || status === 401) throw new SheetError('no_access', 'Google access was removed. The owner needs to connect Google again in Settings.');
+      if (status === 403 || status === 404) throw new SheetError('no_access', 'Lead Desk can’t open this sheet with the connected Google account. Pick it again with “Connect Google”.');
+      throw new SheetError('google', (typeof data === 'object' && data?.message) || err.message || 'Google error');
+    }
+  });
+}

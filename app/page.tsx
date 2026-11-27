@@ -12,6 +12,7 @@ export default async function Home() {
         <p className="sub">Connect the Google Sheet your Meta ads fill, and your team gets a simple calling list with WhatsApp, follow-ups and stats.</p>
         <Link className="btn" href="/signup">Create a free account</Link>
         <Link className="btn light" href="/login">Log in</Link>
+        <nav className="foot"><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link></nav>
       </div>
     </main>
   );

@@ -2,7 +2,7 @@
 
 A phone-first web app for calling and messaging Meta (Facebook/Instagram) ad leads, built by BBB Integrated. **v3 is a multi-company SaaS:** a user signs up (email verification), creates a company, connects the Google Sheet their Meta ads fill, picks which columns show on the lead card, and the team calls leads from cards with Call, WhatsApp and a status. The first company is **Ibna** (rental apartments).
 
-The full build plan with milestones is in `docs/v3-plan.md`. Milestones 1 (foundation), 2 (connect a sheet by URL, field picker, sync, lead cards), 3 (calling workflow: statuses, after-call sheet, notes/history, lead detail, follow-ups, stats, company settings) and 4 (team: invite links, roles, remove member, "called by", company switcher) are done. Next: 5 (Connect Google + background sync).
+The full build plan with milestones is in `docs/v3-plan.md`. Milestones 1 (foundation), 2 (connect a sheet by URL, field picker, sync, lead cards), 3 (calling workflow: statuses, after-call sheet, notes/history, lead detail, follow-ups, stats, company settings), 4 (team: invite links, roles, remove member, "called by", company switcher) and 5 (Connect Google with the Picker, background sync every 2 min, privacy/terms) are done. Next: 6 (launch hardening).
 
 ## Stack
 
@@ -37,6 +37,9 @@ The full build plan with milestones is in `docs/v3-plan.md`. Milestones 1 (found
 - `app/app/useLeads.ts`: optimistic lead state + the call flow (tap Call → dialer → on return, `AfterCall.tsx` asks "How did the call go?"). Used by Leads, Follow-ups and the lead detail page. `LeadCard.tsx` holds the card, `StatusSelect` and `CallButtons`.
 - **Team**: `app/app/settings/TeamPanel.tsx` + `teamActions.ts` (`createInvite`, `cancelInvite`, `removeMember`, `switchCompany`). Invites are **links** (`/invite/<token>`, 7 days) the owner shares by WhatsApp, email or copy. Supabase's admin invite email isn't used: its implicit-flow link doesn't work with server-side auth, and the default sender is rate-limited. `app/invite/[token]` looks the token up with the service role, then `accept_invite()` checks the signed-in email matches.
 - `lib/team.ts`: `loadTeam()`, `loadInvites()`. `Ctx.team` maps user id → first name for "last by Shahila".
+- **Connect Google**: `/api/google/start` → Google consent (`drive.file` scope, offline) → `/api/google/callback` puts the refresh token in an encrypted 30-minute cookie (`lib/google/pending.ts`) → the Google Picker (`ConnectSheet.tsx`) picks the file → `connectSheet(via: 'google')` saves the source as `connection = 'oauth'` and moves the token, encrypted (`lib/crypto.ts`, `TOKEN_ENC_KEY`), into `source_secrets`. `syncSource()` reads OAuth sources with `oauthSheets()`.
+- **Background sync**: `POST /api/cron/sync` (needs `Authorization: Bearer CRON_SECRET`), called every 2 minutes by Supabase pg_cron. One-time setup SQL in `supabase/setup/cron.sql`, which keeps the secret in Supabase Vault.
+- `/privacy` and `/terms` (`app/(legal)/`): needed for Google's OAuth review. Contact email from `NEXT_PUBLIC_CONTACT_EMAIL`.
 - `lib/tz.ts`: server "today" in `Asia/Kolkata` (Vercel runs in UTC). Make it per company when non-India companies join.
 - `lib/google/sheets.ts`: Sheets API as the robot service account (`GOOGLE_SERVICE_ACCOUNT_JSON`, read-only scope). Companies share their sheet with `robotEmail()` as Viewer.
 - `lib/sync.ts`: `syncSource()` upserts sheet rows into `leads` by `(source_id, external_id)`, writing only sheet-derived columns so call results survive. Skips a source synced in the last 45s.

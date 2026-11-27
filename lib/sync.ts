@@ -1,6 +1,7 @@
 import 'server-only';
 import { supabaseAdmin } from '@/lib/supabase/admin';
-import { sheets as defaultSheets, SheetError } from '@/lib/google/sheets';
+import { sheets as defaultSheets, oauthSheets, SheetError } from '@/lib/google/sheets';
+import { decrypt } from '@/lib/crypto';
 import { rowsToLeads } from '@/lib/sheets/rows';
 import type { FieldMap } from '@/lib/leads';
 
@@ -13,7 +14,7 @@ const CHUNK = 500;
 
 export type SyncResult = { sourceId: string; ok: boolean; total?: number; added?: number; error?: string; skipped?: boolean };
 
-type Source = { id: string; company_id: string; spreadsheet_id: string; tab_title: string; field_map: FieldMap; card_fields: string[]; companies: { country_code: string } | null };
+type Source = { id: string; company_id: string; spreadsheet_id: string; tab_title: string; connection: 'service_account' | 'oauth'; field_map: FieldMap; card_fields: string[]; companies: { country_code: string } | null };
 
 /**
  * Sync one source. With `force: false` it first "claims" the source and skips it if it was synced
@@ -34,11 +35,16 @@ export async function syncSource(sourceId: string, { force = false, sheets = def
   }
 
   const { data: src, error } = await db.from('sheet_sources')
-    .select('id, company_id, spreadsheet_id, tab_title, field_map, card_fields, companies(country_code)')
+    .select('id, company_id, spreadsheet_id, tab_title, connection, field_map, card_fields, companies(country_code)')
     .eq('id', sourceId).single<Source>();
   if (error || !src) return { sourceId, ok: false, error: 'Sheet connection not found' };
 
   try {
+    if (src.connection === 'oauth' && sheets === defaultSheets) {
+      const { data: sec } = await db.from('source_secrets').select('token_enc').eq('source_id', src.id).maybeSingle();
+      if (!sec) throw new Error('Google access is missing. The owner needs to connect Google again.');
+      sheets = oauthSheets(decrypt(sec.token_enc));
+    }
     const values = await sheets.values(src.spreadsheet_id, src.tab_title);
     const rows = rowsToLeads(values, src.field_map || {}, src.card_fields || [], src.companies?.country_code || '91');
 
