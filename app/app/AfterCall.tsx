@@ -4,16 +4,20 @@ import { createPortal } from 'react-dom';
 import { STATUSES, cleanPhone, fmtPhone, fmtDay } from '@/lib/leads';
 import type { Lead } from '@/lib/types';
 import { addDays } from './useLeads';
-import { PhoneIcon, CalendarIcon, MicIcon } from '@/app/Icons';
+import { PhoneIcon, CalendarIcon, MicIcon, WhatsAppIcon } from '@/app/Icons';
 
 type SR = { lang: string; interimResults: boolean; continuous: boolean; start(): void; stop(): void; onresult: (e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void; onerror: () => void; onend: () => void };
 
 // "How did the call go?" bottom sheet. Opens when the user comes back from the phone dialer.
-export default function AfterCall({ lead, secs, countryCode, onSave, onClose, say }: {
+// Step 1: pick a result (required) and Save. Step 2: optional WhatsApp message to the lead, then close.
+export default function AfterCall({ lead, secs, countryCode, wa, onSave, onWa, onClose, say }: {
   lead: Lead | null; secs: number; countryCode: string;
+  wa: { href: string; text: string } | null;
   onSave: (id: string, v: { status: string; follow_up: string | null; note: string }) => void;
+  onWa: (id: string) => void;
   onClose: () => void; say: (m: string) => void;
 }) {
+  const [step, setStep] = useState<'result' | 'wa'>('result');
   const [status, setStatus] = useState('');
   const [fu, setFu] = useState<string | null>(null);
   const [note, setNote] = useState('');
@@ -21,11 +25,15 @@ export default function AfterCall({ lead, secs, countryCode, onSave, onClose, sa
   const recRef = useRef<SR | null>(null);
   const taRef = useRef<HTMLTextAreaElement>(null);
 
+  // Reset only when a different lead's call opens (saving changes the lead object but not its id).
+  const leadId = lead?.id;
   useEffect(() => {
     if (!lead) return;
+    setStep('result');
     setStatus(lead.status === 'New' ? '' : lead.status);
     setFu(lead.follow_up); setNote('');
-  }, [lead]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [leadId]);
 
   const stopMic = () => { try { recRef.current?.stop(); } catch { /* already stopped */ } recRef.current = null; setRec(false); };
   useEffect(() => () => stopMic(), []);
@@ -50,6 +58,7 @@ export default function AfterCall({ lead, secs, countryCode, onSave, onClose, sa
     if (!status || status === 'New') return say('Pick how the call went');
     stopMic();
     onSave(lead.id, { status, follow_up: status === 'Follow-up' && !fu ? addDays(1) : fu, note: note.trim() });
+    if (wa?.href) setStep('wa'); else onClose();
   };
 
   const quick: [string, string][] = [['Tomorrow', addDays(1)], ['In 3 days', addDays(3)], ['Next week', addDays(7)]];
@@ -70,7 +79,24 @@ export default function AfterCall({ lead, secs, countryCode, onSave, onClose, sa
     const prev = { position: b.position, top: b.top, left: b.left, right: b.right, width: b.width };
     document.documentElement.classList.add('locked');
     Object.assign(b, { position: 'fixed', top: `-${y}px`, left: '0', right: '0', width: '100%' });
+    // iPhone Safari still rubber-bands the screen on drags, whatever the CSS says. So while the sheet
+    // is open, cancel every touch drag except one that scrolls the sheet's body and still has room to go.
+    let startY = 0;
+    const onStart = (e: TouchEvent) => { startY = e.touches[0]?.clientY ?? 0; };
+    const onMove = (e: TouchEvent) => {
+      if (e.touches.length > 1) { e.preventDefault(); return; }               // no pinch while open
+      const body = (e.target as Element | null)?.closest?.('.sbody') as HTMLElement | null;
+      if (!body || body.scrollHeight <= body.clientHeight + 1) { e.preventDefault(); return; }
+      const dy = (e.touches[0]?.clientY ?? 0) - startY;                    // > 0: finger moving down
+      const atTop = body.scrollTop <= 0;
+      const atBottom = body.scrollTop + body.clientHeight >= body.scrollHeight - 1;
+      if ((dy > 0 && atTop) || (dy < 0 && atBottom)) e.preventDefault();
+    };
+    document.addEventListener('touchstart', onStart, { passive: true });
+    document.addEventListener('touchmove', onMove, { passive: false });
     return () => {
+      document.removeEventListener('touchstart', onStart);
+      document.removeEventListener('touchmove', onMove);
       Object.assign(b, prev);
       document.documentElement.classList.remove('locked');
       window.scrollTo(0, y);
@@ -96,10 +122,35 @@ export default function AfterCall({ lead, secs, countryCode, onSave, onClose, sa
 
   return createPortal(
     <>
-      {/* No closing by tapping outside: a call must get a result, so the lead leaves the Call list. */}
-      <div className={'ov' + (lead ? ' on' : shield ? ' shield' : '')} onClick={() => { if (lead) say('Choose how the call went to continue'); }} />
-      <div className={'sheet withfoot' + (lead ? ' on' : '')} role="dialog" aria-modal="true" aria-label="How did the call go?">
-        {lead && (
+      {/* Step 1 can't be closed by tapping outside (a call must get a result). Step 2 can: the result is saved. */}
+      <div className={'ov' + (lead ? ' on' : shield ? ' shield' : '')}
+        onClick={() => { if (!lead) return; if (step === 'wa') onClose(); else say('Choose how the call went to continue'); }} />
+      <div className={'sheet withfoot' + (lead ? ' on' : '')} role="dialog" aria-modal="true" aria-label={step === 'wa' ? 'Send a WhatsApp message?' : 'How did the call go?'}>
+        {lead && step === 'wa' && wa && (
+          <>
+          <div className="sbody">
+            <div className="grab" />
+            <div>
+              <span className="ended">✓ Saved · {status}</span>
+              <h2>Send a WhatsApp message?</h2>
+              <p className="sub">To {lead.name}{ph ? ' · ' + fmtPhone(ph) : ''}</p>
+            </div>
+            <div className="waprev">
+              <span className="lbl">Message</span>
+              <p>{wa.text}</p>
+              <span className="sub" style={{ fontSize: 12.5 }}>You can edit it in WhatsApp before sending.</span>
+            </div>
+          </div>
+          <div className="sfoot" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <a className="savebtn wabtn" href={wa.href} target="_blank" rel="noopener noreferrer"
+              onClick={() => { onWa(lead.id); onClose(); }}>
+              <WhatsAppIcon size={20} />Send on WhatsApp
+            </a>
+            <button className="skipbtn" onClick={onClose}>Skip</button>
+          </div>
+          </>
+        )}
+        {lead && step === 'result' && (
           <>
           <div className="sbody">
             <div className="grab" />
@@ -107,7 +158,7 @@ export default function AfterCall({ lead, secs, countryCode, onSave, onClose, sa
               <span className="ended"><PhoneIcon size={13} />Call ended{dur}</span>
               <h2>How did the call go?</h2>
               <p className="sub">{lead.name}{ph ? ' · ' + fmtPhone(ph) : ''}</p>
-              <p className="sub" style={{ marginTop: 4 }}>Choose a result to save and close.</p>
+              <p className="sub" style={{ marginTop: 4 }}>Choose a result, then save.</p>
             </div>
             <div className="sgrid">
               {STATUSES.filter(s => s.k !== 'New').map(s => (

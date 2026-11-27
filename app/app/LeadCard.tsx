@@ -19,11 +19,14 @@ export function StatusSelect({ value, onChange, big }: { value: string; onChange
   );
 }
 
-export function whatsAppFor(l: Lead, ctx: Ctx) {
-  const ph = cleanPhone(l.phone, ctx.countryCode); if (!ph) return '';
+// The company's WhatsApp message for this lead and its wa.me link (null without a valid phone).
+export function waParts(l: Lead, ctx: Ctx): { href: string; text: string } | null {
+  const ph = cleanPhone(l.phone, ctx.countryCode); if (!ph) return null;
   const map = ctx.sources[l.source_id]?.field_map || {};
-  return waLink(ph, waText(ctx.template, { name: l.name, type: map.type ? l.fields?.[map.type] : '', city: map.city ? l.fields?.[map.city] : '' }));
+  const text = waText(ctx.template, { name: l.name, type: map.type ? l.fields?.[map.type] : '', city: map.city ? l.fields?.[map.city] : '' });
+  return { href: waLink(ph, text), text };
 }
+export const whatsAppFor = (l: Lead, ctx: Ctx) => waParts(l, ctx)?.href || '';
 
 export function CallButtons({ lead: l, ctx, onCall, onWa }: { lead: Lead; ctx: Ctx; onCall: (id: string) => void; onWa: (id: string) => void }) {
   const ph = cleanPhone(l.phone, ctx.countryCode);

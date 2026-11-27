@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cleanPhone, fmtPhone, fmtWhen, ago, fmtDay, label, nice, fmtValue, initials, statusOf } from '@/lib/leads';
 import type { Activity, Ctx, Lead } from '@/lib/types';
-import { StatusSelect, CallButtons, avatarBg } from '../../LeadCard';
+import { StatusSelect, CallButtons, avatarBg, waParts } from '../../LeadCard';
 import AfterCall from '../../AfterCall';
 import { useLeads } from '../../useLeads';
 import { addNote } from '../../actions';
@@ -96,7 +96,7 @@ export default function LeadDetail({ lead, ctx, activity, names }: { lead: Lead;
         </div>
       )}
 
-      <AfterCall lead={L.sheet ? l : null} secs={L.sheet?.secs || 0} countryCode={ctx.countryCode} onSave={L.saveCall} onClose={() => L.setSheet(null)} say={L.say} />
+      <AfterCall lead={L.sheet ? l : null} secs={L.sheet?.secs || 0} countryCode={ctx.countryCode} wa={waParts(l, ctx)} onWa={L.tapWhatsApp} onSave={L.saveCall} onClose={() => L.setSheet(null)} say={L.say} />
       <div className={'toast' + (L.toast ? ' on' : '')} role="status">{L.toast}</div>
     </>
   );

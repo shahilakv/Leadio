@@ -7,7 +7,10 @@ html,body{background:var(--bg)}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 html,body{overscroll-behavior:none;overflow-x:hidden;max-width:100%}
 body{touch-action:manipulation}
-html.locked,html.locked body{overflow:hidden}
+html.locked,html.locked body{overflow:hidden;height:100%}
+/* While a sheet is open, toasts show at the top so they never cover its buttons. */
+html.locked .toast{bottom:auto;top:calc(16px + env(safe-area-inset-top));transform:translate(-50%,-16px)}
+html.locked .toast.on{transform:translate(-50%,0)}
 body{color:var(--ink);font:15px/1.45 var(--font-jakarta),system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:clip}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer;background:none;border:0}
@@ -222,4 +225,8 @@ textarea.input{width:100%;border-radius:16px;border:1.5px solid var(--line);padd
 .savebtn.ready{background:var(--lime);color:var(--ink);box-shadow:0 8px 20px rgba(150,185,20,.45)}
 .savebtn.ready:active{transform:scale(.98)}
 .chips{overscroll-behavior-x:contain}
+.waprev{background:#E7F8EE;border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.waprev p{font-size:15px;font-weight:500;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.savebtn.wabtn{display:flex;align-items:center;justify-content:center;gap:10px;background:var(--wa);color:#fff;text-decoration:none;box-shadow:0 8px 20px rgba(31,175,85,.35)}
+.skipbtn{width:100%;height:48px;border-radius:24px;background:var(--soft);font-size:15px;font-weight:700}
 @media (prefers-reduced-motion:reduce){.sheet,.ov{transition:none}}

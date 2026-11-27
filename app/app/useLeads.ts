@@ -89,7 +89,7 @@ export function useLeads(initial: Lead[]) {
 
   const saveCall = useCallback(async (id: string, input: { status: string; follow_up: string | null; note: string }) => {
     const prev = leads.find(l => l.id === id); if (!prev) return;
-    setSheet(null);
+    // The sheet stays open for the optional WhatsApp step; AfterCall closes it with setSheet(null).
     clearCall();
     patch(id, { status: input.status, follow_up: input.follow_up, attempts: prev.attempts + 1, last_called_at: new Date().toISOString() });
     say('Saved');

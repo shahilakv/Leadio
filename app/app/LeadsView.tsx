@@ -5,7 +5,7 @@ import { PhoneIcon } from '@/app/Icons';
 import { useRouter } from 'next/navigation';
 import { STATUSES, NOTCONN, WARM, ymd, cleanPhone } from '@/lib/leads';
 import type { Ctx, Lead } from '@/lib/types';
-import LeadCard from './LeadCard';
+import LeadCard, { waParts } from './LeadCard';
 import AfterCall from './AfterCall';
 import { useLeads } from './useLeads';
 
@@ -108,7 +108,7 @@ export default function LeadsView({ initial, ctx, syncError, truncated, company 
         {shown.length > 300 && <p className="note">Showing the first 300. Use search or the filters to find others.</p>}
         {truncated && <p className="note">Only your newest 3,000 leads are loaded.</p>}
       </div>
-      <AfterCall lead={sheetLead} secs={L.sheet?.secs || 0} countryCode={ctx.countryCode} onSave={L.saveCall} onClose={() => L.setSheet(null)} say={L.say} />
+      <AfterCall lead={sheetLead} secs={L.sheet?.secs || 0} countryCode={ctx.countryCode} wa={sheetLead ? waParts(sheetLead, ctx) : null} onWa={L.tapWhatsApp} onSave={L.saveCall} onClose={() => L.setSheet(null)} say={L.say} />
       <div className={'toast' + (L.toast ? ' on' : '')} role="status">{L.toast}</div>
     </>
   );

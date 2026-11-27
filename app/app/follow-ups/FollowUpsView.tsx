@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import SheetPicker, { useSheetFilter } from '../SheetPicker';
 import { FOLLOW_GROUPS, FOLLOW_STATUSES, followGroup, statusOf } from '@/lib/leads';
 import type { Ctx, Lead } from '@/lib/types';
-import LeadCard from '../LeadCard';
+import LeadCard, { waParts } from '../LeadCard';
 import AfterCall from '../AfterCall';
 import { useLeads } from '../useLeads';
 
@@ -49,7 +49,7 @@ export default function FollowUpsView({ initial, ctx }: { initial: Lead[]; ctx: 
           <p className="sub">Leads you mark “No answer” or “Follow-up” after a call show up here, sorted by their follow-up date.</p>
         </div>
       )}
-      <AfterCall lead={sheetLead} secs={L.sheet?.secs || 0} countryCode={ctx.countryCode} onSave={L.saveCall} onClose={() => L.setSheet(null)} say={L.say} />
+      <AfterCall lead={sheetLead} secs={L.sheet?.secs || 0} countryCode={ctx.countryCode} wa={sheetLead ? waParts(sheetLead, ctx) : null} onWa={L.tapWhatsApp} onSave={L.saveCall} onClose={() => L.setSheet(null)} say={L.say} />
       <div className={'toast' + (L.toast ? ' on' : '')} role="status">{L.toast}</div>
     </>
   );
