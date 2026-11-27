@@ -2,6 +2,7 @@
 import { revalidatePath } from 'next/cache';
 import { activeCompany } from '@/lib/company';
 import { supabaseServer } from '@/lib/supabase/server';
+import { supabaseAdmin } from '@/lib/supabase/admin';
 import { syncCompany } from '@/lib/sync';
 import { sheetsForSource, writeStatuses } from '@/lib/writeback';
 import { col, NEW_STATUS_HEADER } from '@/lib/sheets/rows';
@@ -62,8 +63,10 @@ export async function setStatusColumn(sourceId: string, choice: string): Promise
     } else if (!headers.includes(choice)) {
       throw new Error('That column isn’t in the sheet any more.');
     }
-    const { error } = await sb.from('sheet_sources').update({ status_column: column, last_error: null }).eq('id', sourceId);
+    // Users may only update status_column (column grants in 0003); last_error is cleared with the service role.
+    const { error } = await sb.from('sheet_sources').update({ status_column: column }).eq('id', sourceId);
     if (error) throw new Error(error.message);
+    await supabaseAdmin().from('sheet_sources').update({ last_error: null }).eq('id', sourceId);
     const r = await writeStatuses(sourceId);
     if (!r.ok) {
       await sb.from('sheet_sources').update({ status_column: null }).eq('id', sourceId);
