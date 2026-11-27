@@ -8,7 +8,8 @@ export const metadata: Metadata = {
   title: 'Leadio',
   description: 'Call and WhatsApp your Meta ad leads from your phone.',
 };
-export const viewport: Viewport = { width: 'device-width', initialScale: 1, viewportFit: 'cover', themeColor: '#EDEFF2' };
+// App-like on phones: no pinch/double-tap zoom (all inputs are 16px, so iOS never zooms on focus).
+export const viewport: Viewport = { width: 'device-width', initialScale: 1, maximumScale: 1, userScalable: false, viewportFit: 'cover', themeColor: '#EDEFF2' };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

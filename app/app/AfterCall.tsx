@@ -60,16 +60,24 @@ export default function AfterCall({ lead, secs, countryCode, onSave, onClose, sa
   // Rendered into <body> through a portal, so no animated/transformed parent can move this fixed sheet.
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+  // While the sheet is open the page behind it can't scroll or bounce (feels like a native app).
+  useEffect(() => {
+    if (!lead) return;
+    document.documentElement.classList.add('locked');
+    return () => document.documentElement.classList.remove('locked');
+  }, [lead]);
   if (!mounted) return null;
+  const ready = !!status && status !== 'New';
 
   return createPortal(
     <>
       {/* No closing by tapping outside: a call must get a result, so the lead leaves the Call list. */}
       <div className={'ov' + (lead ? ' on' : '')} onClick={() => say('Choose how the call went to continue')} />
-      <div className={'sheet' + (lead ? ' on' : '')} role="dialog" aria-modal="true" aria-label="How did the call go?">
-        <div className="grab" />
+      <div className={'sheet withfoot' + (lead ? ' on' : '')} role="dialog" aria-modal="true" aria-label="How did the call go?">
         {lead && (
           <>
+          <div className="sbody">
+            <div className="grab" />
             <div>
               <span className="ended"><PhoneIcon size={13} />Call ended{dur}</span>
               <h2>How did the call go?</h2>
@@ -98,7 +106,13 @@ export default function AfterCall({ lead, secs, countryCode, onSave, onClose, sa
                 <button className={'mic' + (rec ? ' rec' : '')} onClick={dictate} aria-label="Speak a note"><MicIcon size={19} /></button>
               </div>
             </div>
-            <button className="btn" onClick={save} disabled={!status || status === 'New'}>{status && status !== 'New' ? 'Save' : 'Choose a result first'}</button>
+          </div>
+          {/* Always visible at the bottom of the sheet, however far the content scrolls. */}
+          <div className="sfoot">
+            <button className={'savebtn' + (ready ? ' ready' : '')} onClick={save} disabled={!ready}>
+              {ready ? <>Save · {status}</> : 'Choose a result above'}
+            </button>
+          </div>
           </>
         )}
       </div>
