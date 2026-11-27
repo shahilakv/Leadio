@@ -22,6 +22,10 @@ export default async function Settings() {
     loadTeam(c.id),
     owner ? loadInvites(c.id) : Promise.resolve([]),
   ]);
+  const sheetRows: SheetRow[] = await Promise.all((sources ?? []).map(async s => {
+    const { count } = await sb.from('leads').select('id', { count: 'exact', head: true }).eq('source_id', s.id);
+    return { ...s, leads: count ?? 0 } as SheetRow;
+  }));
 
   return (
     <>
@@ -47,7 +51,7 @@ export default async function Settings() {
 
       <TeamPanel members={members} invites={invites} me={user!.id} owner={owner} company={c.name} site={siteUrl()} />
 
-      <SheetsPanel sources={(sources ?? []) as SheetRow[]} owner={owner} robot={robotEmail()} />
+      <SheetsPanel sources={sheetRows} owner={owner} robot={robotEmail()} />
 
       <div className="card" style={{ marginTop: 10 }}>
         <Link className="btn light" href="/onboarding?new=1">Create another company</Link>

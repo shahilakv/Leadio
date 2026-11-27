@@ -32,6 +32,21 @@ async function ownedSource(sourceId: string) {
   return { sb, src: data };
 }
 
+/**
+ * Disconnect a sheet. Its leads and their call history are deleted from Lead Desk too
+ * (leads → sheet_sources is ON DELETE CASCADE). The Google Sheet itself is not changed.
+ */
+export async function removeSheet(sourceId: string): Promise<Res> {
+  try {
+    const { sb } = await ownedSource(sourceId);
+    const { error, count } = await sb.from('sheet_sources').delete({ count: 'exact' }).eq('id', sourceId);
+    if (error) throw new Error(error.message);
+    if (!count) throw new Error('Could not remove this sheet.');
+    revalidatePath('/app', 'layout');
+    return { ok: true };
+  } catch (e) { return fail(e); }
+}
+
 // Column names of the sheet, for the "status column" dropdown.
 export async function sheetHeaders(sourceId: string): Promise<Res<{ headers: string[] }>> {
   try {
