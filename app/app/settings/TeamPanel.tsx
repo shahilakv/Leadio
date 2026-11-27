@@ -3,9 +3,10 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { createInvite, cancelInvite, removeMember } from './teamActions';
 import type { Member, Invite } from '@/lib/team';
+import { WhatsAppIcon, MailIcon } from '@/app/Icons';
 
 const inviteText = (company: string, url: string) =>
-  `You're invited to join ${company} on Lead Desk to call our leads. Open this link to join: ${url}`;
+  `You're invited to join ${company} on Leadio to call our leads. Open this link to join: ${url}`;
 
 export default function TeamPanel({ members, invites, me, owner, company, site }: {
   members: Member[]; invites: Invite[]; me: string; owner: boolean; company: string; site: string;
@@ -32,8 +33,8 @@ export default function TeamPanel({ members, invites, me, owner, company, site }
   const share = (to: string, url: string) => (
     <div className="acts" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
       <button className="act" style={{ background: 'var(--soft)' }} onClick={() => copy(url)}>{copied === url ? 'Copied ✓' : 'Copy link'}</button>
-      <a className="act wa" href={`https://wa.me/?text=${encodeURIComponent(inviteText(company, url))}`} target="_blank" rel="noopener noreferrer">WhatsApp</a>
-      <a className="act call" href={`mailto:${to}?subject=${encodeURIComponent(`Join ${company} on Lead Desk`)}&body=${encodeURIComponent(inviteText(company, url))}`}>Email</a>
+      <a className="act wa" href={`https://wa.me/?text=${encodeURIComponent(inviteText(company, url))}`} target="_blank" rel="noopener noreferrer"><WhatsAppIcon size={16} />WhatsApp</a>
+      <a className="act call" href={`mailto:${to}?subject=${encodeURIComponent(`Join ${company} on Leadio`)}&body=${encodeURIComponent(inviteText(company, url))}`}><MailIcon size={16} />Email</a>
     </div>
   );
 

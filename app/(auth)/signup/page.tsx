@@ -1,15 +1,16 @@
+import { Brand } from '@/app/Icons';
 import Link from 'next/link';
 import AuthForm from '../AuthForm';
 import { signUp } from '../actions';
 
-export const metadata = { title: 'Create account · Lead Desk' };
+export const metadata = { title: 'Create account · Leadio' };
 
 export default async function SignUp({ searchParams }: { searchParams: Promise<{ next?: string; email?: string }> }) {
   const { next = '/onboarding', email = '' } = await searchParams;
   return (
     <main className="col center">
       <div className="card" style={{ width: '100%' }}>
-        <div className="brand"><i>☎</i>Lead Desk</div>
+        <Brand />
         <h1>Create your account</h1>
         <p className="sub">We’ll email you a link to verify your address.</p>
         <AuthForm action={signUp} submit="Create account" fields={[

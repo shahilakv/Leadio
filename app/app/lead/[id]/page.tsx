@@ -5,7 +5,7 @@ import { loadCtx } from '@/lib/loadLeads';
 import { LEAD_COLS, type Activity, type Lead } from '@/lib/types';
 import LeadDetail from './LeadDetail';
 
-export const metadata = { title: 'Lead details · Lead Desk' };
+export const metadata = { title: 'Lead details · Leadio' };
 export const dynamic = 'force-dynamic';
 
 export default async function LeadPage({ params }: { params: Promise<{ id: string }> }) {

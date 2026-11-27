@@ -10,7 +10,7 @@ import { switchCompany } from './teamActions';
 import CompanyForm from './CompanyForm';
 import TeamPanel from './TeamPanel';
 
-export const metadata = { title: 'Settings · Lead Desk' };
+export const metadata = { title: 'Settings · Leadio' };
 export const dynamic = 'force-dynamic';
 
 export default async function Settings() {

@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import SheetPicker, { useSheetFilter } from './SheetPicker';
+import { PhoneIcon } from '@/app/Icons';
 import { useRouter } from 'next/navigation';
 import { STATUSES, NOTCONN, WARM, ymd, cleanPhone } from '@/lib/leads';
 import type { Ctx, Lead } from '@/lib/types';
@@ -90,7 +91,7 @@ export default function LeadsView({ initial, ctx, syncError, truncated, company 
       </div>
       <div className="ltitle">
         <div><h2>{query ? 'Search results' : v.t}</h2><p>{query ? `${shown.length} found in all leads` : v.sub(inView.length)}</p></div>
-        {next && <a className="next" href={'tel:+' + cleanPhone(next.phone, ctx.countryCode)} onClick={() => L.markCall(next.id)} aria-label={'Call next: ' + next.name}>☎ Call next</a>}
+        {next && <a className="next" href={'tel:+' + cleanPhone(next.phone, ctx.countryCode)} onClick={() => L.markCall(next.id)} aria-label={'Call next: ' + next.name}><PhoneIcon size={15} />Call next</a>}
       </div>
       <div className="list">
         {shown.length ? shown.slice(0, 300).map(l => (

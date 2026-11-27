@@ -1,4 +1,4 @@
-# Lead Desk
+# Leadio
 
 Call and WhatsApp your Meta ad leads from your phone. Companies sign up, connect the Google Sheet their Meta ads fill, choose what shows on each lead card, and their team works through leads with Call, WhatsApp, statuses, follow-ups and stats.
 

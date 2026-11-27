@@ -3,7 +3,7 @@ import { JWT } from 'google-auth-library';
 import { userRequester } from '@/lib/google/oauth';
 
 // Google Sheets access as our robot (service account). Companies share their sheet with ROBOT email.
-// Read-only: Lead Desk never writes to a company's sheet.
+// Read-only: Leadio never writes to a company's sheet.
 
 type Key = { client_email: string; private_key: string };
 let key: Key | null = null;
@@ -43,8 +43,8 @@ const googleFetch: Fetcher = async (url, init) => {
     const status = err.response?.status;
     const msg = err.response?.data?.error?.message || err.message || 'Google error';
     if (status === 403) throw new SheetError('no_access', init?.method && init.method !== 'GET'
-      ? `Lead Desk can read this sheet but not write to it. Share it with ${k.client_email} as Editor to save statuses into the sheet.`
-      : `Lead Desk can't open this sheet yet. Share it with ${k.client_email} (Viewer is enough).`);
+      ? `Leadio can read this sheet but not write to it. Share it with ${k.client_email} as Editor to save statuses into the sheet.`
+      : `Leadio can't open this sheet yet. Share it with ${k.client_email} (Viewer is enough).`);
     if (status === 404) throw new SheetError('not_found', 'Sheet not found. Check the link.');
     throw new SheetError('google', msg);
   }
@@ -93,7 +93,7 @@ export function oauthSheets(refreshToken: string) {
       const status = err.response?.status;
       const data = err.response?.data?.error;
       if (data === 'invalid_grant' || status === 401) throw new SheetError('no_access', 'Google access was removed. The owner needs to connect Google again in Settings.');
-      if (status === 403 || status === 404) throw new SheetError('no_access', 'Lead Desk can’t open this sheet with the connected Google account. Pick it again with “Connect Google”.');
+      if (status === 403 || status === 404) throw new SheetError('no_access', 'Leadio can’t open this sheet with the connected Google account. Pick it again with “Connect Google”.');
       throw new SheetError('google', (typeof data === 'object' && data?.message) || err.message || 'Google error');
     }
   });

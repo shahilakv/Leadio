@@ -110,7 +110,9 @@ h1{font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.2}
 .qd>button{height:44px;padding:0 14px;border-radius:99px;background:var(--soft);font-size:13.5px;font-weight:700}
 .qd>button.on{background:var(--ink);color:#fff}
 .qd .cal{position:relative;width:44px;height:44px;border-radius:50%;background:var(--soft);display:grid;place-items:center;cursor:pointer}
-.qd .cal.on{background:var(--ink)}
+.qd .cal.on{background:var(--ink);color:#fff}
+.act svg,.btn svg,.next svg{flex:none}
+.next svg{color:var(--lime)}
 .qd .cal input{position:absolute;inset:0;opacity:0;width:100%;cursor:pointer}
 .qd .when{font-size:13px;font-weight:600;color:var(--mute)}
 .clear{color:var(--red);font-weight:700;font-size:13px;text-decoration:underline}

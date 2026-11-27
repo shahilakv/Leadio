@@ -1,4 +1,4 @@
-# Lead Desk
+# Leadio
 
 A phone-first web app for calling and messaging Meta (Facebook/Instagram) ad leads, built by BBB Integrated. **v3 is a multi-company SaaS:** a user signs up (email verification), creates a company, connects the Google Sheet their Meta ads fill, picks which columns show on the lead card, and the team calls leads from cards with Call, WhatsApp and a status. The first company is **Ibna** (rental apartments).
 
@@ -70,7 +70,7 @@ New · No answer · Follow-up · Interested · Visit booked · Converted · Not 
 
 ## Design rules
 
-The Figma source is "Lead Desk – Mobile App": https://www.figma.com/design/HcegiYQJr1VZgukFksDolI
+The Figma source is "Lead Desk – Mobile App" (the product's old name): https://www.figma.com/design/HcegiYQJr1VZgukFksDolI
 
 - Font: **Plus Jakarta Sans** (500/600/700/800), loaded with `next/font`.
 - Colours (tokens in `app/globals.css`): bg `#EDEFF2`, cards `#FFFFFF`, ink `#111114`, muted `#868A94`, soft `#F3F4F6`, **lime `#D7F36B`** = selected/active, pink `#F8DCE5`, lavender `#E4E0FA`, WhatsApp `#1FAF55`.

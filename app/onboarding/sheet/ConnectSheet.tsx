@@ -104,12 +104,12 @@ export default function ConnectSheet({ robot, company, googleEnabled, googleConn
       <div className="card">
         <p className="lbl">Step 2 of 3 · {company}</p>
         <h1>Connect your Google Sheet</h1>
-        <p className="sub">Use the sheet your Meta lead ads fill. Lead Desk reads it. It only writes to it if you later turn on “Save status into the sheet” in Settings.</p>
+        <p className="sub">Use the sheet your Meta lead ads fill. Leadio reads it. It only writes to it if you later turn on “Save status into the sheet” in Settings.</p>
 
         {!via && (
           <>
             <a className="btn" href="/api/google/start">Connect Google (easiest)</a>
-            <p className="sub" style={{ marginTop: -6 }}>Sign in with Google and pick your sheet. Lead Desk only gets the one sheet you pick.</p>
+            <p className="sub" style={{ marginTop: -6 }}>Sign in with Google and pick your sheet. Leadio only gets the one sheet you pick.</p>
             <button className="btn light" onClick={() => setVia('link')}>Paste a sheet link instead</button>
           </>
         )}
@@ -125,7 +125,7 @@ export default function ConnectSheet({ robot, company, googleEnabled, googleConn
           <>
             <ol className="steps">
               <li>
-                <b>Share the sheet with Lead Desk.</b> Open it, tap <b>Share</b>, and add this email as <b>Viewer</b>:
+                <b>Share the sheet with Leadio.</b> Open it, tap <b>Share</b>, and add this email as <b>Viewer</b>:
                 {robot
                   ? <span className="robot"><code>{robot}</code><button type="button" className="pill" onClick={copy}>{copied ? 'Copied ✓' : 'Copy'}</button></span>
                   : <span className="err">Sheet links aren’t set up on the server yet (GOOGLE_SERVICE_ACCOUNT_JSON).</span>}

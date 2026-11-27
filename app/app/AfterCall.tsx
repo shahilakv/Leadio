@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { STATUSES, cleanPhone, fmtPhone, fmtDay } from '@/lib/leads';
 import type { Lead } from '@/lib/types';
 import { addDays } from './useLeads';
+import { PhoneIcon, CalendarIcon, MicIcon } from '@/app/Icons';
 
 type SR = { lang: string; interimResults: boolean; continuous: boolean; start(): void; stop(): void; onresult: (e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void; onerror: () => void; onend: () => void };
 
@@ -63,7 +64,7 @@ export default function AfterCall({ lead, secs, countryCode, onSave, onClose, sa
         {lead && (
           <>
             <div>
-              <span className="ended">☎ Call ended{dur}</span>
+              <span className="ended"><PhoneIcon size={13} />Call ended{dur}</span>
               <h2>How did the call go?</h2>
               <p className="sub">{lead.name}{ph ? ' · ' + fmtPhone(ph) : ''}</p>
             </div>
@@ -78,7 +79,7 @@ export default function AfterCall({ lead, secs, countryCode, onSave, onClose, sa
               <div className="lbl">Follow up on</div>
               <div className="qd">
                 {quick.map(([t, d]) => <button key={t} className={fu === d ? 'on' : ''} onClick={() => setFu(fu === d ? null : d)}>{t}</button>)}
-                <label className={'cal' + (custom ? ' on' : '')} aria-label="Pick a date">📅<input type="date" value={fu || ''} onChange={e => setFu(e.target.value || null)} /></label>
+                <label className={'cal' + (custom ? ' on' : '')} aria-label="Pick a date"><CalendarIcon size={17} /><input type="date" value={fu || ''} onChange={e => setFu(e.target.value || null)} /></label>
                 {fu && <span className="when">{fmtDay(fu)} · <button className="clear" onClick={() => setFu(null)}>clear</button></span>}
               </div>
             </div>
@@ -86,7 +87,7 @@ export default function AfterCall({ lead, secs, countryCode, onSave, onClose, sa
               <div className="lbl">Note</div>
               <div className="nbox">
                 <textarea ref={taRef} rows={3} value={note} onChange={e => setNote(e.target.value)} placeholder="Type a note, or tap the mic and speak" maxLength={4000} />
-                <button className={'mic' + (rec ? ' rec' : '')} onClick={dictate} aria-label="Speak a note">🎤</button>
+                <button className={'mic' + (rec ? ' rec' : '')} onClick={dictate} aria-label="Speak a note"><MicIcon size={19} /></button>
               </div>
             </div>
             <button className="btn" onClick={save}>Save</button>

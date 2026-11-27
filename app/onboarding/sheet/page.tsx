@@ -5,7 +5,7 @@ import { googleReady } from '@/lib/google/oauth';
 import { getPending } from '@/lib/google/pending';
 import ConnectSheet from './ConnectSheet';
 
-export const metadata = { title: 'Connect your Google Sheet · Lead Desk' };
+export const metadata = { title: 'Connect your Google Sheet · Leadio' };
 export const dynamic = 'force-dynamic';
 
 export default async function SheetStep({ searchParams }: { searchParams: Promise<{ via?: string; gerr?: string }> }) {

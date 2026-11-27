@@ -4,7 +4,7 @@ import { supabaseServer } from '@/lib/supabase/server';
 import { stats, fmtMins } from '@/lib/leads';
 import { periodStart } from '@/lib/tz';
 
-export const metadata = { title: 'Stats · Lead Desk' };
+export const metadata = { title: 'Stats · Leadio' };
 export const dynamic = 'force-dynamic';
 
 const PERIODS = [['today', 'Today'], ['week', 'This week'], ['all', 'All time']] as const;

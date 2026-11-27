@@ -3,7 +3,7 @@ import AuthForm from '../(auth)/AuthForm';
 import { createCompany } from './actions';
 import { myCompanies } from '@/lib/company';
 
-export const metadata = { title: 'Set up your company · Lead Desk' };
+export const metadata = { title: 'Set up your company · Leadio' };
 
 export default async function Onboarding({ searchParams }: { searchParams: Promise<{ new?: string }> }) {
   const { new: addAnother } = await searchParams;

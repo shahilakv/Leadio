@@ -5,8 +5,8 @@ import { decrypt } from '@/lib/crypto';
 import { statusCells } from '@/lib/sheets/rows';
 import type { FieldMap } from '@/lib/leads';
 
-// Optional: copy statuses from Lead Desk into the company's chosen sheet column.
-// Lead Desk stays the source of truth: the column is written, never read back.
+// Optional: copy statuses from Leadio into the company's chosen sheet column.
+// Leadio stays the source of truth: the column is written, never read back.
 
 type Src = { id: string; spreadsheet_id: string; tab_title: string; connection: 'service_account' | 'oauth'; status_column: string | null; field_map: FieldMap };
 

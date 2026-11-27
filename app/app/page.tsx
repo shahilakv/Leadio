@@ -3,7 +3,7 @@ import { activeCompany } from '@/lib/company';
 import { loadCtx, loadLeads, LEAD_LIMIT } from '@/lib/loadLeads';
 import LeadsView from './LeadsView';
 
-export const metadata = { title: 'Leads · Lead Desk' };
+export const metadata = { title: 'Leads · Leadio' };
 export const dynamic = 'force-dynamic';
 
 export default async function Leads() {

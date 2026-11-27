@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ago } from '@/lib/leads';
 import { syncNow, sheetHeaders, setStatusColumn, removeSheet } from './sheetActions';
+import { RefreshIcon } from '@/app/Icons';
 
 export type SheetRow = { id: string; label: string; tab_title: string; connection: string; status_column: string | null; last_synced_at: string | null; last_error: string | null; leads: number };
 
@@ -23,7 +24,7 @@ export default function SheetsPanel({ sources, owner, robot }: { sources: SheetR
     <div className="card" style={{ marginTop: 10 }}>
       <span className="lbl" style={{ margin: 0 }}>Connected sheets</span>
       {sources.length ? sources.map(s => <SheetItem key={s.id} s={s} owner={owner} robot={robot} />) : <p className="sub">No sheet connected yet.</p>}
-      {sources.length > 0 && <button className="btn" onClick={sync} disabled={pending}>{pending ? 'Syncing…' : '↻ Sync now'}</button>}
+      {sources.length > 0 && <button className="btn" onClick={sync} disabled={pending}>{pending ? 'Syncing…' : <><RefreshIcon size={17} />Sync now</>}</button>}
       {msg.error && <p className="err" role="alert">{msg.error}</p>}
       {msg.ok && <p className="ok" role="status">{msg.ok}</p>}
       {owner && <Link className="btn light" href="/onboarding/sheet">{sources.length ? 'Connect another sheet' : 'Connect a sheet'}</Link>}
@@ -51,7 +52,7 @@ function SheetItem({ s, owner, robot }: { s: SheetRow; owner: boolean; robot: st
     const r = await sheetHeaders(s.id);
     if (!r.ok) return setMsg({ error: r.error });
     setHeaders(r.headers);
-    setChoice(s.status_column || (r.headers.includes('Lead Desk Status') ? 'Lead Desk Status' : '__new__'));
+    setChoice(s.status_column || (r.headers.includes('Leadio Status') ? 'Leadio Status' : '__new__'));
   });
   const save = () => start(async () => {
     setMsg({});
@@ -74,13 +75,13 @@ function SheetItem({ s, owner, robot }: { s: SheetRow; owner: boolean; robot: st
       {owner && !headers && <button className="btn light" onClick={edit} disabled={pending}>{pending ? 'Loading…' : s.status_column ? 'Change status column' : 'Save status into the sheet'}</button>}
       {owner && headers && (
         <>
-          <p className="sub">When someone changes a lead’s status in Lead Desk, it’s written into this column of the sheet.
+          <p className="sub">When someone changes a lead’s status in Leadio, it’s written into this column of the sheet.
             {s.connection !== 'oauth' && robot && <> The sheet must be shared with <b>{robot}</b> as <b>Editor</b>.</>}</p>
           <label className="field">
             <span className="lbl">Status column</span>
             <select value={choice} onChange={e => setChoice(e.target.value)}>
               <option value="">Off (don’t write to the sheet)</option>
-              {!headers.includes('Lead Desk Status') && <option value="__new__">+ Add a new “Lead Desk Status” column</option>}
+              {!headers.includes('Leadio Status') && <option value="__new__">+ Add a new “Leadio Status” column</option>}
               {headers.map(h => <option key={h} value={h}>{h}</option>)}
             </select>
           </label>
@@ -95,7 +96,7 @@ function SheetItem({ s, owner, robot }: { s: SheetRow; owner: boolean; robot: st
       )}
       {owner && confirm && (
         <div className="err" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <span>Remove “{s.label || 'this sheet'}”? Its <b>{s.leads} lead{s.leads === 1 ? '' : 's'}</b> and all their calls, statuses and notes will be deleted from Lead Desk. This can’t be undone. Your Google Sheet itself isn’t changed.</span>
+          <span>Remove “{s.label || 'this sheet'}”? Its <b>{s.leads} lead{s.leads === 1 ? '' : 's'}</b> and all their calls, statuses and notes will be deleted from Leadio. This can’t be undone. Your Google Sheet itself isn’t changed.</span>
           <div className="acts">
             <button className="act" style={{ background: 'var(--card)', color: 'var(--ink)' }} onClick={() => setConfirm(false)} disabled={pending}>Cancel</button>
             <button className="act" style={{ background: 'var(--red)', color: '#fff' }} onClick={remove} disabled={pending}>{pending ? 'Removing…' : 'Yes, remove'}</button>

@@ -1,10 +1,11 @@
+import { Brand } from '@/app/Icons';
 import Link from 'next/link';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { currentUser } from '@/lib/supabase/server';
 import { signOut } from '../../(auth)/actions';
 import JoinButton from './JoinButton';
 
-export const metadata = { title: 'Join your team · Lead Desk' };
+export const metadata = { title: 'Join your team · Leadio' };
 export const dynamic = 'force-dynamic';
 
 type Row = { email: string; role: string; accepted_at: string | null; expires_at: string; companies: { name: string } | null };
@@ -22,7 +23,7 @@ export default async function InvitePage({ params }: { params: Promise<{ token: 
   const shell = (body: React.ReactNode) => (
     <main className="col center">
       <div className="card" style={{ width: '100%' }}>
-        <div className="brand"><i>☎</i>Lead Desk</div>
+        <Brand />
         {body}
       </div>
     </main>
@@ -32,14 +33,14 @@ export default async function InvitePage({ params }: { params: Promise<{ token: 
     return shell(<>
       <h1>This invite link doesn’t work</h1>
       <p className="sub">It may have expired (links last 7 days), been used already, or been cancelled. Ask your team owner for a new link.</p>
-      <Link className="btn light" href={user ? '/app' : '/login'}>{user ? 'Open Lead Desk' : 'Log in'}</Link>
+      <Link className="btn light" href={user ? '/app' : '/login'}>{user ? 'Open Leadio' : 'Log in'}</Link>
     </>);
   }
 
   const company = inv.companies?.name || 'a team';
   const intro = <>
     <h1>Join {company}</h1>
-    <p className="sub">You’ve been invited as {inv.role === 'owner' ? 'an owner' : 'a caller'} to work on {company}’s leads in Lead Desk.</p>
+    <p className="sub">You’ve been invited as {inv.role === 'owner' ? 'an owner' : 'a caller'} to work on {company}’s leads in Leadio.</p>
   </>;
 
   if (!user) {

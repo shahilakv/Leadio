@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { STATUSES, ago, fmtWhen, fmtPhone, cleanPhone, waText, waLink, label, fmtValue, statusOf, initials, fmtDay } from '@/lib/leads';
 import type { Ctx, Lead } from '@/lib/types';
+import { PhoneIcon, WhatsAppIcon } from '@/app/Icons';
 
 const AVS = ['#E4E0FA', '#F8DCE5', '#F3F4F6', '#DCF4EA'];
 export const avatarBg = (id: string) => AVS[parseInt(id.replace(/\D/g, '').slice(-2) || '0', 10) % AVS.length];
@@ -29,8 +30,8 @@ export function CallButtons({ lead: l, ctx, onCall, onWa }: { lead: Lead; ctx: C
   if (!ph) return <div className="acts"><div className="nophone">No valid phone number</div></div>;
   return (
     <div className="acts">
-      <a className="act call" href={'tel:+' + ph} onClick={() => onCall(l.id)}>☎ Call</a>
-      <a className="act wa" href={whatsAppFor(l, ctx)} target="_blank" rel="noopener noreferrer" onClick={() => onWa(l.id)}>WhatsApp</a>
+      <a className="act call" href={'tel:+' + ph} onClick={() => onCall(l.id)}><PhoneIcon />Call</a>
+      <a className="act wa" href={whatsAppFor(l, ctx)} target="_blank" rel="noopener noreferrer" onClick={() => onWa(l.id)}><WhatsAppIcon />WhatsApp</a>
     </div>
   );
 }

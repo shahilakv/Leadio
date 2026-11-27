@@ -5,7 +5,7 @@ import { CLOSED } from '@/lib/leads';
 import { LEAD_COLS, type Lead } from '@/lib/types';
 import FollowUpsView from './FollowUpsView';
 
-export const metadata = { title: 'Follow-ups · Lead Desk' };
+export const metadata = { title: 'Follow-ups · Leadio' };
 export const dynamic = 'force-dynamic';
 
 export default async function FollowUps() {

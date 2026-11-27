@@ -33,7 +33,7 @@ async function ownedSource(sourceId: string) {
 }
 
 /**
- * Disconnect a sheet. Its leads and their call history are deleted from Lead Desk too
+ * Disconnect a sheet. Its leads and their call history are deleted from Leadio too
  * (leads → sheet_sources is ON DELETE CASCADE). The Google Sheet itself is not changed.
  */
 export async function removeSheet(sourceId: string): Promise<Res> {
@@ -57,7 +57,7 @@ export async function sheetHeaders(sourceId: string): Promise<Res<{ headers: str
 }
 
 /**
- * Turn status write-back on (existing column, or '__new__' to add a "Lead Desk Status" column) or off ('').
+ * Turn status write-back on (existing column, or '__new__' to add a "Leadio Status" column) or off ('').
  * Turning it on also writes every lead's current status once.
  */
 export async function setStatusColumn(sourceId: string, choice: string): Promise<Res<{ written: number; column: string | null }>> {

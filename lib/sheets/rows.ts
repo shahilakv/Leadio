@@ -9,7 +9,7 @@ export const TEST_LEAD = /^(p:)?<test lead/i;
 // Columns that hold Meta's unique lead id.
 export const ID_COL = /^(id|lead_?id)$/i;
 
-export const NEW_STATUS_HEADER = 'Lead Desk Status';
+export const NEW_STATUS_HEADER = 'Leadio Status';
 
 /**
  * Where to write each lead's status. Rows are found by Meta's id column, so sorting the sheet is safe.
