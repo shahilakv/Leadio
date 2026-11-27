@@ -1,27 +1,27 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import SheetPicker, { useSheetFilter } from './SheetPicker';
-import { PhoneIcon } from '@/app/Icons';
 import { useRouter } from 'next/navigation';
-import { STATUSES, NOTCONN, WARM, ymd, cleanPhone } from '@/lib/leads';
+import { STATUSES, NOTCONN, WARM, ymd } from '@/lib/leads';
 import type { Ctx, Lead } from '@/lib/types';
 import LeadCard, { waParts } from './LeadCard';
 import AfterCall from './AfterCall';
 import { useLeads } from './useLeads';
 
 const SYNC_MS = 60_000;
+type Order = 'newest' | 'oldest';
 
 const isToday = (l: Lead) => !!l.lead_time && ymd(new Date(l.lead_time)) === ymd(new Date());
 const TILES = [
-  { k: 'today', t: 'Today’s leads', f: isToday, sub: (n: number) => `${n} lead${n === 1 ? '' : 's'} · newest first` },
+  { k: 'today', t: 'Today’s leads', f: isToday, sub: (n: number) => `${n} lead${n === 1 ? '' : 's'}` },
   { k: 'notconn', t: 'Not connected', f: (l: Lead) => NOTCONN.includes(l.status), sub: (n: number) => `${n} · new or no answer` },
   { k: 'warm', t: 'Interested', f: (l: Lead) => WARM.includes(l.status), sub: (n: number) => `${n} · interested or visit booked` },
 ];
 // "Call list" = leads nobody has updated yet (status New). Logging a call always sets another status,
 // so a called lead leaves this list. It's the default view.
 const CHIPS = [
-  { k: 'calllist', t: 'Call list', f: (l: Lead) => l.status === 'New', sub: (n: number) => `${n} to call · newest first` },
-  { k: 'all', t: 'All leads', f: () => true, sub: (n: number) => `${n} leads · newest first` },
+  { k: 'calllist', t: 'Call list', f: (l: Lead) => l.status === 'New', sub: (n: number) => `${n} to call` },
+  { k: 'all', t: 'All leads', f: () => true, sub: (n: number) => `${n} leads` },
   ...STATUSES.filter(s => !['New', 'No answer', 'Interested'].includes(s.k)).map(s => ({ k: s.k, t: s.k, c: s.c, f: (l: Lead) => l.status === s.k, sub: (n: number) => `${n} lead${n === 1 ? '' : 's'}` })),
 ];
 const VIEW = (k: string) => TILES.find(x => x.k === k) || CHIPS.find(x => x.k === k) || CHIPS[0];
@@ -35,6 +35,10 @@ export default function LeadsView({ initial, ctx, syncError, truncated, company 
   const leads = sheet ? L.leads.filter(l => l.source_id === sheet) : L.leads;
   const [filter, setFilter] = useState('calllist');
   const [q, setQ] = useState('');
+  // Newest first / Oldest first, remembered on this device.
+  const [order, setOrderState] = useState<Order>('newest');
+  useEffect(() => { try { if (localStorage.getItem('ld_order') === 'oldest') setOrderState('oldest'); } catch { /* private mode */ } }, []);
+  const setOrder = (o: Order) => { setOrderState(o); try { localStorage.setItem('ld_order', o); } catch { /* private mode */ } };
   const [syncErr, setSyncErr] = useState(syncError);
   const busy = useRef(false);
 
@@ -62,10 +66,11 @@ export default function LeadsView({ initial, ctx, syncError, truncated, company 
   const v = VIEW(filter);
   const inView = leads.filter(v.f);
   const query = q.trim().toLowerCase();
-  const shown = query
+  const matched = query
     ? leads.filter(l => [l.name, l.phone, l.campaign, ...Object.values(l.fields || {})].join(' ').toLowerCase().includes(query))
     : inView;
-  const next = shown.find(l => NOTCONN.includes(l.status) && cleanPhone(l.phone, ctx.countryCode));
+  // Leads arrive newest first; "Oldest first" just reverses the list.
+  const shown = order === 'oldest' ? [...matched].reverse() : matched;
   const sheetLead = L.sheet ? L.leads.find(l => l.id === L.sheet!.id) || null : null;
 
   return (
@@ -94,7 +99,12 @@ export default function LeadsView({ initial, ctx, syncError, truncated, company 
       </div>
       <div className="ltitle">
         <div><h2>{query ? 'Search results' : v.t}</h2><p>{query ? `${shown.length} found in all leads` : v.sub(inView.length)}</p></div>
-        {next && <a className="next" href={'tel:+' + cleanPhone(next.phone, ctx.countryCode)} onClick={() => L.markCall(next.id)} aria-label={'Call next: ' + next.name}><PhoneIcon size={15} />Call next</a>}
+        <label className="sortpick">
+          <select value={order} onChange={e => setOrder(e.target.value as Order)} aria-label="Sort leads">
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+          </select>
+        </label>
       </div>
       <div className="list">
         {shown.length ? shown.slice(0, 300).map(l => (

@@ -11,7 +11,7 @@ const TABS = [
 ];
 const indexFor = (path: string) => Math.max(0, TABS.findIndex(t => t.href === path || (t.href !== '/app' && path.startsWith(t.href + '/'))));
 
-// The lime pill slides to the tapped tab immediately, before the next screen has loaded.
+// The yellow pill slides to the tapped tab immediately, before the next screen has loaded.
 export default function Nav({ due }: { due: number }) {
   const path = usePathname();
   const [active, setActive] = useState(() => indexFor(path));

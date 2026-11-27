@@ -8,6 +8,7 @@ import { signOut } from '../../(auth)/actions';
 import SheetsPanel, { type SheetRow } from './SheetsPanel';
 import { switchCompany } from './teamActions';
 import CompanyForm from './CompanyForm';
+import ThemeSwitch from './ThemeSwitch';
 import TeamPanel from './TeamPanel';
 
 export const metadata = { title: 'Settings · Leadio' };
@@ -46,6 +47,8 @@ export default async function Settings() {
           </div>
         )}
       </div>
+
+      <ThemeSwitch />
 
       <CompanyForm name={c.name} template={c.whatsapp_template} countryCode={c.country_code} owner={owner} />
 

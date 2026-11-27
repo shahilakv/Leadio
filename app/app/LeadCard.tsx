@@ -1,8 +1,9 @@
 'use client';
 import Link from 'next/link';
-import { STATUSES, ago, fmtWhen, fmtPhone, cleanPhone, waText, waLink, label, fmtValue, statusOf, initials, fmtDay } from '@/lib/leads';
+import { STATUSES, ago, fmtWhen, fmtPhone, cleanPhone, waText, waLink, label, fmtValue, nice, statusOf, initials, fmtDay } from '@/lib/leads';
 import type { Ctx, Lead } from '@/lib/types';
 import { PhoneIcon, WhatsAppIcon } from '@/app/Icons';
+import { useHydrated } from './useHydrated';
 
 const AVS = ['#E4E0FA', '#F8DCE5', '#F3F4F6', '#DCF4EA'];
 export const avatarBg = (id: string) => AVS[parseInt(id.replace(/\D/g, '').slice(-2) || '0', 10) % AVS.length];
@@ -47,11 +48,13 @@ export default function LeadCard({ lead: l, ctx, onCall, onWa, onStatus }: {
   const map = src?.field_map || {};
   // Name, phone and the lead's time already have their own places on the card.
   const extra = (src?.card_fields || []).filter(h => h !== map.name && h !== map.phone && h !== map.time && l.fields?.[h]);
-  const when = l.lead_time ? `${fmtWhen(l.lead_time)} · ${ago(l.lead_time)}` : '';
+  // Times use the phone's clock and time zone, so they're drawn only in the browser (see useHydrated).
+  const live = useHydrated();
+  const when = live && l.lead_time ? `${fmtWhen(l.lead_time)} · ${ago(l.lead_time)}` : '';
   const meta = [
     l.attempts ? `${l.attempts} call${l.attempts > 1 ? 's' : ''}` : '',
-    l.last_called_at ? `last ${l.last_called_by && ctx.team[l.last_called_by] ? 'by ' + ctx.team[l.last_called_by] + ' ' : ''}${ago(l.last_called_at)}` : '',
-    l.follow_up ? 'follow up ' + fmtDay(l.follow_up) : '',
+    live && l.last_called_at ? `last ${l.last_called_by && ctx.team[l.last_called_by] ? 'by ' + ctx.team[l.last_called_by] + ' ' : ''}${ago(l.last_called_at)}` : '',
+    live && l.follow_up ? 'follow up ' + fmtDay(l.follow_up) : '',
   ].filter(Boolean).join(' · ');
   return (
     <article className="lc">
@@ -59,13 +62,13 @@ export default function LeadCard({ lead: l, ctx, onCall, onWa, onStatus }: {
         <div className="av" style={{ background: avatarBg(l.id) }}>{initials(l.name || '?')}</div>
         <div style={{ flex: 1 }}>
           <div className="nm">{l.name || 'No name'}</div>
-          {when && <span className="dt">{when}</span>}
+          <span className="dt">{when || ' '}</span>
         </div>
         <Link className="det" href={`/app/lead/${l.id}`}>Details ›</Link>
       </div>
       <div className="ph">{ph ? fmtPhone(ph) : l.phone || 'No phone number'}</div>
       {extra.length > 0 && (
-        <div className="info">{extra.map(h => <span key={h}><small>{label(h)}</small>{fmtValue(l.fields[h])}</span>)}</div>
+        <div className="info">{extra.map(h => <span key={h}><small>{label(h)}</small>{live ? fmtValue(l.fields[h]) : nice(l.fields[h])}</span>)}</div>
       )}
       {meta && <p className="meta">{meta}</p>}
       <StatusSelect value={l.status} onChange={s => onStatus(l.id, s)} />

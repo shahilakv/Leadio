@@ -8,6 +8,7 @@ import { StatusSelect, CallButtons, avatarBg, waParts } from '../../LeadCard';
 import AfterCall from '../../AfterCall';
 import { useLeads } from '../../useLeads';
 import { addNote } from '../../actions';
+import { useHydrated } from '../../useHydrated';
 
 const KIND: Record<Activity['kind'], string> = { call: 'Call', whatsapp: 'WhatsApp opened', status: 'Status changed', note: 'Note' };
 
@@ -15,6 +16,7 @@ export default function LeadDetail({ lead, ctx, activity, names }: { lead: Lead;
   const router = useRouter();
   const initial = useMemo(() => [lead], [lead]);
   const L = useLeads(initial);
+  const live = useHydrated();   // times/dates use the phone's time zone: draw them only in the browser
   const l = L.leads[0] ?? lead;
   const [note, setNote] = useState('');
   const [saving, start] = useTransition();
@@ -42,7 +44,7 @@ export default function LeadDetail({ lead, ctx, activity, names }: { lead: Lead;
         <div className="av" style={{ background: avatarBg(l.id), width: 56, height: 56, fontSize: 18 }}>{initials(l.name || '?')}</div>
         <div style={{ flex: 1 }}>
           <h1 style={{ fontSize: 24 }}>{l.name || 'No name'}</h1>
-          {l.lead_time && <span className="dt">Came in {fmtWhen(l.lead_time)} · {ago(l.lead_time)}</span>}
+          {live && l.lead_time && <span className="dt">Came in {fmtWhen(l.lead_time)} · {ago(l.lead_time)}</span>}
         </div>
       </div>
 
@@ -54,10 +56,10 @@ export default function LeadDetail({ lead, ctx, activity, names }: { lead: Lead;
       <div className="card" style={{ marginTop: 10 }}>
         <div><span className="lbl">Status</span><StatusSelect big value={l.status} onChange={s => L.setStatus(l.id, s)} /></div>
         <label className="field">
-          <span className="lbl">Follow up {l.follow_up ? `· ${fmtDay(l.follow_up)}` : ''}</span>
+          <span className="lbl">Follow up {live && l.follow_up ? `· ${fmtDay(l.follow_up)}` : ''}</span>
           <input type="date" value={l.follow_up || ''} onChange={e => L.setFollowUp(l.id, e.target.value || null)} />
         </label>
-        {l.attempts > 0 && <p className="sub">{l.attempts} call{l.attempts > 1 ? 's' : ''}{l.last_called_at ? ` · last ${l.last_called_by && ctx.team[l.last_called_by] ? 'by ' + ctx.team[l.last_called_by] + ' ' : ''}${ago(l.last_called_at)}` : ''}</p>}
+        {l.attempts > 0 && <p className="sub">{l.attempts} call{l.attempts > 1 ? 's' : ''}{live && l.last_called_at ? ` · last ${l.last_called_by && ctx.team[l.last_called_by] ? 'by ' + ctx.team[l.last_called_by] + ' ' : ''}${ago(l.last_called_at)}` : ''}</p>}
       </div>
 
       {(map.city || map.type || l.campaign) && (
@@ -80,7 +82,7 @@ export default function LeadDetail({ lead, ctx, activity, names }: { lead: Lead;
               <li key={a.id} style={a.status ? { ['--c' as string]: statusOf(a.status).c } : undefined}>
                 <i />
                 <div>
-                  <small>{fmtWhen(a.created_at)} · {names[a.user_id] || 'Team member'}</small>
+                  <small>{live ? fmtWhen(a.created_at) : ''} · {names[a.user_id] || 'Team member'}</small>
                   <p><b>{KIND[a.kind]}{a.status ? `: ${a.status}` : ''}</b>{a.body ? ` — ${a.body}` : ''}</p>
                 </div>
               </li>
@@ -92,7 +94,7 @@ export default function LeadDetail({ lead, ctx, activity, names }: { lead: Lead;
       {answers.length > 0 && (
         <div className="card" style={{ marginTop: 10, gap: 0 }}>
           <h3 style={{ fontSize: 16, marginBottom: 6 }}>Form answers</h3>
-          {answers.map(([k, v]) => <div className="ans" key={k}><span>{label(k)}</span><b>{fmtValue(v)}</b></div>)}
+          {answers.map(([k, v]) => <div className="ans" key={k}><span>{label(k)}</span><b>{live ? fmtValue(v) : nice(v)}</b></div>)}
         </div>
       )}
 

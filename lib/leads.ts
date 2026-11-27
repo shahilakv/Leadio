@@ -9,7 +9,7 @@ export const STATUSES: Status[] = [
   { k: 'Follow-up',      c: '#7C5CF0', t: '#EEE8FF' },
   { k: 'Interested',     c: '#0E9567', t: '#DCF4EA' },
   { k: 'Visit booked',   c: '#0A84A6', t: '#DAF1F7' },
-  { k: 'Converted',      c: '#1E6B2E', t: '#D7F36B' },
+  { k: 'Converted',      c: '#1E6B2E', t: '#FFF0B3' },
   { k: 'Not interested', c: '#6F737C', t: '#ECEDF0' },
   { k: 'Wrong number',   c: '#D63A2B', t: '#FDE3E0' },
 ];

@@ -40,7 +40,7 @@ The full build plan with milestones is in `docs/v3-plan.md`. Milestones 1 (found
 - **Connect Google**: `/api/google/start` → Google consent (`drive.file` scope, offline) → `/api/google/callback` puts the refresh token in an encrypted 30-minute cookie (`lib/google/pending.ts`) → the Google Picker (`ConnectSheet.tsx`) picks the file → `connectSheet(via: 'google')` saves the source as `connection = 'oauth'` and moves the token, encrypted (`lib/crypto.ts`, `TOKEN_ENC_KEY`), into `source_secrets`. `syncSource()` reads OAuth sources with `oauthSheets()`.
 - **Background sync**: `POST /api/cron/sync` (needs `Authorization: Bearer CRON_SECRET`), called **every minute** by Supabase pg_cron. One-time setup SQL in `supabase/setup/cron.sql`, which keeps the secret in Supabase Vault. Check it with `select created, status_code, error_msg, content from net._http_response order by created desc limit 5`. `"skipped"` means an open app synced that sheet in the last 45s (normal). An occasional `NULL` status with "HTTP2 framing layer" is a pg_net connection-reuse glitch; the next minute's run covers it.
 - `/privacy` and `/terms` (`app/(legal)/`): needed for Google's OAuth review. Contact email from `NEXT_PUBLIC_CONTACT_EMAIL`.
-- **Motion**: no animation library. `app/app/template.tsx` fades each screen in, `loading.tsx` + `Skeleton.tsx` show instant placeholders on tab switch, and `Nav.tsx` slides the lime pill on tap. All of it respects `prefers-reduced-motion`.
+- **Motion**: no animation library. `app/app/template.tsx` fades each screen in, `loading.tsx` + `Skeleton.tsx` show instant placeholders on tab switch, and `Nav.tsx` slides the yellow pill on tap. All of it respects `prefers-reduced-motion`.
 - `SheetPicker.tsx`: "All sheets / one sheet" dropdown on Leads and Follow-ups (remembered in localStorage).
 - `fmtValue()` makes sheet dates readable on cards and in details. The mapped time column is never shown as a chip; it's under the name.
 - `lib/tz.ts`: server "today" in `Asia/Kolkata` (Vercel runs in UTC). Make it per company when non-India companies join.
@@ -75,7 +75,10 @@ New · No answer · Follow-up · Interested · Visit booked · Converted · Not 
 The Figma source is "Lead Desk – Mobile App" (the product's old name): https://www.figma.com/design/HcegiYQJr1VZgukFksDolI
 
 - Font: **Plus Jakarta Sans** (500/600/700/800), loaded with `next/font`.
-- Colours (tokens in `app/globals.css`): bg `#EDEFF2`, cards `#FFFFFF`, ink `#111114`, muted `#868A94`, soft `#F3F4F6`, **lime `#D7F36B`** = selected/active, pink `#F8DCE5`, lavender `#E4E0FA`, WhatsApp `#1FAF55`.
+- Colours (tokens in `app/globals.css`): bg `#EDEFF2`, cards `#FFFFFF`, ink `#111114`, muted `#868A94`, soft `#F3F4F6`, **yellow `#FFD43B`** (`--accent`) = selected/active, pink `#F8DCE5`, lavender `#E4E0FA`, WhatsApp `#1FAF55`. Text on the yellow uses `--on-accent` (always dark); text on ink-filled buttons uses `--on-ink`. Never hard-code `#fff` on `var(--ink)`, or dark mode breaks.
+- **Dark mode**: `html[data-theme="dark"]` redefines the tokens (`app/globals.css`). Settings has a Light/Dark switch (`ThemeSwitch.tsx`), saved per device in localStorage `ld_theme`. `THEME_SCRIPT` (`app/theme.ts`) runs in `<head>` before the first paint, so there's no white flash.
+- **Logo**: yellow rounded square, dark outline phone, a dot for a new lead. Drawn in `lib/logo.tsx` (`LogoMark`), with `app/icon.svg` as the favicon (keep the two in step). `app/apple-icon.tsx` makes the iPhone home-screen icon, `app/app-icon/[file]` makes the Android 192/512/maskable PNGs, and `app/manifest.ts` is the web app manifest (opens `/app` full-screen).
+- **Times and dates on screen** depend on the phone's time zone, so in client components draw them only after hydration (`useHydrated()`). Vercel renders in UTC, which causes hydration mismatches.
 - Phone first: one column, max width 480px, tap targets ≥ 44px, inputs 16px (stops iOS zoom), rounded cards (24px), pill buttons.
 - **Keep it simple.** The owner wants plain, easy-to-understand UI: labelled buttons rather than bare icons, and no extra flows.
 - Don't use `alert/confirm/prompt`.

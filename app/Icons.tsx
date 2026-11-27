@@ -1,3 +1,5 @@
+import { LogoMark } from '@/lib/logo';
+
 // Small inline icons. Outline style, 24×24, colour from currentColor. Decorative: pair them with a text label.
 type P = { size?: number; className?: string };
 const svg = (size: number, className: string | undefined, children: React.ReactNode, fill = false) => (
@@ -29,7 +31,14 @@ export const MailIcon = ({ size = 18, className }: P) => svg(size, className, <>
   <rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-10 6L2 7" />
 </>);
 
-// The Leadio mark: outline phone in a lime circle.
+export const SunIcon = ({ size = 18, className }: P) => svg(size, className, <>
+  <circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M6.3 17.7l-1.4 1.4M19.1 4.9l-1.4 1.4" />
+</>);
+
+export const MoonIcon = ({ size = 18, className }: P) => svg(size, className,
+  <path d="M20.5 14.1A8.5 8.5 0 1 1 9.9 3.5a6.6 6.6 0 0 0 10.6 10.6z" />);
+
+// The Leadio logo next to the name (same drawing as the favicon and app icon, lib/logo.tsx).
 export const Brand = ({ text = 'Leadio' }: { text?: string }) => (
-  <div className="brand"><i><PhoneIcon size={18} /></i>{text}</div>
+  <div className="brand"><LogoMark size={36} />{text}</div>
 );
