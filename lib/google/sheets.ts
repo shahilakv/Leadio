@@ -27,19 +27,24 @@ export class SheetError extends Error {
   constructor(public kind: 'setup' | 'no_access' | 'not_found' | 'google', message: string) { super(message); }
 }
 
-type Fetcher = (url: string) => Promise<unknown>;
+type Init = { method?: 'GET' | 'PUT' | 'POST'; data?: unknown };
+type Fetcher = (url: string, init?: Init) => Promise<unknown>;
 
 // Real fetcher: signed requests with the robot's token. Tests pass a fake one.
-const googleFetch: Fetcher = async url => {
+// Scope allows writing because of the optional status write-back; the robot can still only
+// open sheets a company shared with it (Viewer = read-only, Editor = status write-back works).
+const googleFetch: Fetcher = async (url, init) => {
   const k = serviceKey();
-  jwt = jwt || new JWT({ email: k.client_email, key: k.private_key, scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'] });
+  jwt = jwt || new JWT({ email: k.client_email, key: k.private_key, scopes: ['https://www.googleapis.com/auth/spreadsheets'] });
   try {
-    return (await jwt.request({ url })).data;
+    return (await jwt.request({ url, method: init?.method || 'GET', data: init?.data })).data;
   } catch (e) {
     const err = e as { response?: { status?: number; data?: { error?: { message?: string } } }; message?: string };
     const status = err.response?.status;
     const msg = err.response?.data?.error?.message || err.message || 'Google error';
-    if (status === 403) throw new SheetError('no_access', `Lead Desk can't open this sheet yet. Share it with ${k.client_email} (Viewer is enough).`);
+    if (status === 403) throw new SheetError('no_access', init?.method && init.method !== 'GET'
+      ? `Lead Desk can read this sheet but not write to it. Share it with ${k.client_email} as Editor to save statuses into the sheet.`
+      : `Lead Desk can't open this sheet yet. Share it with ${k.client_email} (Viewer is enough).`);
     if (status === 404) throw new SheetError('not_found', 'Sheet not found. Check the link.');
     throw new SheetError('google', msg);
   }
@@ -65,6 +70,14 @@ export function makeSheets(fetcher: Fetcher = googleFetch) {
       const r = await fetcher(`${BASE}${encodeURIComponent(id)}/values/${encodeURIComponent(range(tab, a1))}?valueRenderOption=FORMATTED_VALUE&majorDimension=ROWS`) as { values?: unknown[][] };
       return (r.values || []).map(row => row.map(v => (v == null ? '' : String(v))));
     },
+    // Write several single cells at once: [{ a1: 'F12', value: 'Interested' }].
+    async writeCells(id: string, tab: string, cells: { a1: string; value: string }[]): Promise<void> {
+      if (!cells.length) return;
+      await fetcher(`${BASE}${encodeURIComponent(id)}/values:batchUpdate`, {
+        method: 'POST',
+        data: { valueInputOption: 'RAW', data: cells.map(c => ({ range: range(tab, c.a1), values: [[c.value]] })) },
+      });
+    },
   };
 }
 
@@ -73,8 +86,8 @@ export const sheets = makeSheets();
 // Same client, acting as the Google user who connected the sheet with "Connect Google".
 export function oauthSheets(refreshToken: string) {
   const request = userRequester(refreshToken);
-  return makeSheets(async url => {
-    try { return await request(url); }
+  return makeSheets(async (url, init) => {
+    try { return await request(url, init); }
     catch (e) {
       const err = e as { response?: { status?: number; data?: { error?: string | { message?: string } } }; message?: string };
       const status = err.response?.status;

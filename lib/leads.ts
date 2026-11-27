@@ -146,7 +146,17 @@ export function fmtMins(m: number | null): string {
   return `${Math.round(m / 1440)} days`;
 }
 
-export const statusOf =(s: string) => STATUSES.find(x => x.k === s) ?? { k: s, c: '#6F737C', t: '#ECEDF0' };
+// A sheet value as people read it: ISO dates/times become "24 Oct, 5:56 pm", snake_case becomes words.
+export function fmtValue(v: unknown): string {
+  const s = String(v ?? '').trim();
+  if (/^\d{4}-\d{2}-\d{2}([T ]\d{1,2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:?\d{2})?)?$/.test(s)) {
+    if (s.length === 10) { const d = parseDate(s + 'T00:00'); return d ? d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : s; }
+    const w = fmtWhen(s); if (w) return w;
+  }
+  return nice(s);
+}
+
+export const statusOf = (s: string) => STATUSES.find(x => x.k === s) ?? { k: s, c: '#6F737C', t: '#ECEDF0' };
 export const initials = (n: string) => n.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase() || '?';
 
 export function ago(s: unknown, now = Date.now()): string {

@@ -46,5 +46,6 @@ export async function accessToken(refreshToken: string): Promise<string> {
 export function userRequester(refreshToken: string) {
   const c = oauthClient();
   c.setCredentials({ refresh_token: refreshToken });
-  return async (url: string) => (await c.request({ url })).data;
+  return async (url: string, init?: { method?: 'GET' | 'PUT' | 'POST'; data?: unknown }) =>
+    (await c.request({ url, method: init?.method || 'GET', data: init?.data })).data;
 }

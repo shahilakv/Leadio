@@ -37,9 +37,23 @@ h1{font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.2}
 .pill{height:40px;padding:0 16px;border-radius:99px;background:var(--card);font-size:13.5px;font-weight:700;display:inline-flex;align-items:center}
 .empty{background:var(--card);border-radius:var(--r);padding:28px 22px;text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center}
 .empty b{font-size:17px}
-.nav{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));transform:translateX(-50%);width:calc(100% - 32px);max-width:448px;background:var(--ink);border-radius:32px;padding:6px;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;z-index:10}
-.nav a{height:52px;border-radius:26px;color:#fff;font-size:13px;font-weight:700;display:grid;place-items:center;text-decoration:none}
-.nav a.on{background:var(--lime);color:var(--ink)}
+.nav{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));transform:translateX(-50%);width:calc(100% - 32px);max-width:448px;background:var(--ink);border-radius:32px;padding:6px;display:grid;grid-template-columns:repeat(4,1fr);z-index:10;box-shadow:0 10px 30px rgba(17,17,20,.18)}
+.nav a{position:relative;z-index:1;height:52px;border-radius:26px;color:#fff;font-size:13px;font-weight:700;display:grid;place-items:center;text-decoration:none;transition:color .25s ease}
+.nav a.on{color:var(--ink)}
+.navpill{position:absolute;top:6px;left:6px;width:calc((100% - 12px) / 4);height:52px;border-radius:26px;background:var(--lime);transition:transform .38s cubic-bezier(.3,1.3,.5,1);will-change:transform}
+
+/* motion: soft screen fade, press feedback, loading shimmer */
+.page-in{animation:pageIn .26s cubic-bezier(.2,.8,.2,1) both}
+@keyframes pageIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.btn,.act,.tile,.chip,.pill,.det,.opt,.next,.qd>button{transition:transform .12s ease,background-color .2s ease,color .2s ease,box-shadow .2s ease}
+.btn:active,.act:active,.tile:active,.chip:active,.pill:active,.det:active,.opt:active,.next:active,.qd>button:active{transform:scale(.97)}
+.lc{animation:cardIn .3s cubic-bezier(.2,.8,.2,1) both}
+.list .lc:nth-child(2){animation-delay:.03s}.list .lc:nth-child(3){animation-delay:.06s}.list .lc:nth-child(4){animation-delay:.09s}.list .lc:nth-child(n+5){animation-delay:.12s}
+@keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.sk{position:relative;overflow:hidden;background:var(--card);animation:none;min-height:96px}
+.sk::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(237,239,242,.9),transparent);transform:translateX(-100%);animation:shimmer 1.2s infinite}
+@keyframes shimmer{to{transform:translateX(100%)}}
+@media (prefers-reduced-motion:reduce){.page-in,.lc,.sk::after{animation:none}.navpill{transition:none}.btn:active,.act:active,.tile:active,.chip:active{transform:none}}
 .app{padding-bottom:110px}
 
 /* leads screen */
@@ -142,6 +156,11 @@ h1{font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.2}
 .tbl td:not(:first-child),.tbl th:not(:first-child){text-align:right;white-space:nowrap}
 .navbadge{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--red);color:#fff;font-size:11px;margin-left:4px}
 textarea.input{width:100%;border-radius:16px;border:1.5px solid var(--line);padding:12px 16px;font-size:16px;font-weight:500;outline:none;resize:vertical;min-height:96px}
+
+.sheetpick{display:flex;flex-direction:column;align-items:flex-end;max-width:52%}
+.sheetpick .lbl{margin-bottom:4px}
+.sheetpick select{appearance:none;-webkit-appearance:none;height:44px;max-width:100%;border:0;border-radius:99px;background:var(--card);padding:0 34px 0 16px;font-size:14px;font-weight:700;text-overflow:ellipsis;cursor:pointer;
+  background-image:linear-gradient(45deg,transparent 50%,var(--ink) 50%),linear-gradient(135deg,var(--ink) 50%,transparent 50%);background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%;background-size:5px 5px;background-repeat:no-repeat}
 
 /* legal pages */
 .legal{gap:12px;font-size:15px;line-height:1.6}

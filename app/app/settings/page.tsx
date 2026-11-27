@@ -3,8 +3,9 @@ import { activeCompany, myCompanies } from '@/lib/company';
 import { currentUser, supabaseServer } from '@/lib/supabase/server';
 import { loadTeam, loadInvites } from '@/lib/team';
 import { siteUrl } from '@/lib/site';
-import { ago } from '@/lib/leads';
+import { robotEmail } from '@/lib/google/sheets';
 import { signOut } from '../../(auth)/actions';
+import SheetsPanel, { type SheetRow } from './SheetsPanel';
 import { switchCompany } from './teamActions';
 import CompanyForm from './CompanyForm';
 import TeamPanel from './TeamPanel';
@@ -17,7 +18,7 @@ export default async function Settings() {
   const c = company!;
   const owner = c.role === 'owner';
   const [{ data: sources }, members, invites] = await Promise.all([
-    sb.from('sheet_sources').select('id, label, tab_title, last_synced_at, last_error').eq('company_id', c.id).order('created_at'),
+    sb.from('sheet_sources').select('id, label, tab_title, connection, status_column, last_synced_at, last_error').eq('company_id', c.id).order('created_at'),
     loadTeam(c.id),
     owner ? loadInvites(c.id) : Promise.resolve([]),
   ]);
@@ -46,17 +47,7 @@ export default async function Settings() {
 
       <TeamPanel members={members} invites={invites} me={user!.id} owner={owner} company={c.name} site={siteUrl()} />
 
-      <div className="card" style={{ marginTop: 10 }}>
-        <span className="lbl" style={{ margin: 0 }}>Connected sheets</span>
-        {sources?.length ? sources.map(s => (
-          <div key={s.id}>
-            <b>{s.label || 'Google Sheet'}</b> <span className="sub">· tab “{s.tab_title}”</span>
-            <p className="sub">{s.last_synced_at ? `Last checked ${ago(s.last_synced_at)}` : 'Not synced yet'}</p>
-            {s.last_error && <p className="err" style={{ marginTop: 6 }}>{s.last_error}</p>}
-          </div>
-        )) : <p className="sub">No sheet connected yet.</p>}
-        {owner && <Link className="btn light" href="/onboarding/sheet">{sources?.length ? 'Connect another sheet' : 'Connect a sheet'}</Link>}
-      </div>
+      <SheetsPanel sources={(sources ?? []) as SheetRow[]} owner={owner} robot={robotEmail()} />
 
       <div className="card" style={{ marginTop: 10 }}>
         <Link className="btn light" href="/onboarding?new=1">Create another company</Link>

@@ -16,10 +16,5 @@ export default async function FollowUps() {
       .not('status', 'in', `(${CLOSED.map(s => `"${s}"`).join(',')})`).order('follow_up').limit(2000),
     loadCtx(company),
   ]);
-  return (
-    <>
-      <div className="hd"><div className="grow h1">Follow-ups</div></div>
-      <FollowUpsView initial={(data ?? []) as Lead[]} ctx={ctx} />
-    </>
-  );
+  return <FollowUpsView initial={(data ?? []) as Lead[]} ctx={ctx} />;
 }

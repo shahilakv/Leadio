@@ -104,7 +104,7 @@ export default function ConnectSheet({ robot, company, googleEnabled, googleConn
       <div className="card">
         <p className="lbl">Step 2 of 3 · {company}</p>
         <h1>Connect your Google Sheet</h1>
-        <p className="sub">Use the sheet your Meta lead ads fill. Lead Desk only reads it; nothing in your sheet is changed.</p>
+        <p className="sub">Use the sheet your Meta lead ads fill. Lead Desk reads it. It only writes to it if you later turn on “Save status into the sheet” in Settings.</p>
 
         {!via && (
           <>

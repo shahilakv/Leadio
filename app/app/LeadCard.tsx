@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { STATUSES, ago, fmtWhen, fmtPhone, cleanPhone, waText, waLink, label, nice, statusOf, initials, fmtDay } from '@/lib/leads';
+import { STATUSES, ago, fmtWhen, fmtPhone, cleanPhone, waText, waLink, label, fmtValue, statusOf, initials, fmtDay } from '@/lib/leads';
 import type { Ctx, Lead } from '@/lib/types';
 
 const AVS = ['#E4E0FA', '#F8DCE5', '#F3F4F6', '#DCF4EA'];
@@ -41,7 +41,8 @@ export default function LeadCard({ lead: l, ctx, onCall, onWa, onStatus }: {
   const ph = cleanPhone(l.phone, ctx.countryCode);
   const src = ctx.sources[l.source_id];
   const map = src?.field_map || {};
-  const extra = (src?.card_fields || []).filter(h => h !== map.name && h !== map.phone && l.fields?.[h]);
+  // Name, phone and the lead's time already have their own places on the card.
+  const extra = (src?.card_fields || []).filter(h => h !== map.name && h !== map.phone && h !== map.time && l.fields?.[h]);
   const when = l.lead_time ? `${fmtWhen(l.lead_time)} · ${ago(l.lead_time)}` : '';
   const meta = [
     l.attempts ? `${l.attempts} call${l.attempts > 1 ? 's' : ''}` : '',
@@ -60,7 +61,7 @@ export default function LeadCard({ lead: l, ctx, onCall, onWa, onStatus }: {
       </div>
       <div className="ph">{ph ? fmtPhone(ph) : l.phone || 'No phone number'}</div>
       {extra.length > 0 && (
-        <div className="info">{extra.map(h => <span key={h}><small>{label(h)}</small>{nice(l.fields[h])}</span>)}</div>
+        <div className="info">{extra.map(h => <span key={h}><small>{label(h)}</small>{fmtValue(l.fields[h])}</span>)}</div>
       )}
       {meta && <p className="meta">{meta}</p>}
       <StatusSelect value={l.status} onChange={s => onStatus(l.id, s)} />

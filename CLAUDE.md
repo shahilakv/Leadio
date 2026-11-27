@@ -8,7 +8,7 @@ The full build plan with milestones is in `docs/v3-plan.md`. Milestones 1 (found
 
 - **Next.js 15** (App Router, TypeScript) on **Vercel**. `git push` to `main` goes live; other branches get preview URLs.
 - **Supabase**: Auth (email + password, email confirmation, reset) and Postgres. The schema is in `supabase/migrations/` (apply it with the Supabase SQL editor or `supabase db push`).
-- **Google Sheets** is read-only input. Leads are synced into Postgres. Call results (status, notes, follow-ups) live **only in the database**, never in the sheet.
+- **Google Sheets** is the input. Leads are synced into Postgres, and call results (status, notes, follow-ups) live in the database. **Optional status write-back** (owner turns it on per sheet in Settings, `sheet_sources.status_column`): status changes are copied into that one column with `after()` (`lib/writeback.ts`, rows found by Meta id via `statusCells()`). The column is never read back. Link-connected sheets need the robot as **Editor** for this.
 - Tests: **Vitest** (`tests/*.test.ts`) for pure logic.
 
 ## Commands
@@ -40,6 +40,9 @@ The full build plan with milestones is in `docs/v3-plan.md`. Milestones 1 (found
 - **Connect Google**: `/api/google/start` → Google consent (`drive.file` scope, offline) → `/api/google/callback` puts the refresh token in an encrypted 30-minute cookie (`lib/google/pending.ts`) → the Google Picker (`ConnectSheet.tsx`) picks the file → `connectSheet(via: 'google')` saves the source as `connection = 'oauth'` and moves the token, encrypted (`lib/crypto.ts`, `TOKEN_ENC_KEY`), into `source_secrets`. `syncSource()` reads OAuth sources with `oauthSheets()`.
 - **Background sync**: `POST /api/cron/sync` (needs `Authorization: Bearer CRON_SECRET`), called every 2 minutes by Supabase pg_cron. One-time setup SQL in `supabase/setup/cron.sql`, which keeps the secret in Supabase Vault.
 - `/privacy` and `/terms` (`app/(legal)/`): needed for Google's OAuth review. Contact email from `NEXT_PUBLIC_CONTACT_EMAIL`.
+- **Motion**: no animation library. `app/app/template.tsx` fades each screen in, `loading.tsx` + `Skeleton.tsx` show instant placeholders on tab switch, and `Nav.tsx` slides the lime pill on tap. All of it respects `prefers-reduced-motion`.
+- `SheetPicker.tsx`: "All sheets / one sheet" dropdown on Leads and Follow-ups (remembered in localStorage).
+- `fmtValue()` makes sheet dates readable on cards and in details. The mapped time column is never shown as a chip; it's under the name.
 - `lib/tz.ts`: server "today" in `Asia/Kolkata` (Vercel runs in UTC). Make it per company when non-India companies join.
 - `lib/google/sheets.ts`: Sheets API as the robot service account (`GOOGLE_SERVICE_ACCOUNT_JSON`, read-only scope). Companies share their sheet with `robotEmail()` as Viewer.
 - `lib/sync.ts`: `syncSource()` upserts sheet rows into `leads` by `(source_id, external_id)`, writing only sheet-derived columns so call results survive. Skips a source synced in the last 45s.

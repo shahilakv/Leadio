@@ -1,5 +1,7 @@
 'use server';
 import { revalidatePath } from 'next/cache';
+import { after } from 'next/server';
+import { writeLeadStatus } from '@/lib/writeback';
 import { supabaseServer } from '@/lib/supabase/server';
 import { activeCompany } from '@/lib/company';
 import { STATUSES } from '@/lib/leads';
@@ -39,6 +41,7 @@ export async function updateLead(id: string, up: { status?: string; follow_up?: 
     if (error) throw new Error(error.message);
     if (patch.status && patch.status !== lead.status) {
       await sb.from('lead_activity').insert({ lead_id: id, company_id: lead.company_id, user_id: uid, kind: 'status', status: patch.status as string });
+      after(() => writeLeadStatus(id));   // copy to the sheet if the company turned that on
     }
     return { ok: true };
   } catch (e) { return fail(e); }
@@ -59,6 +62,7 @@ export async function logCall(id: string, input: { status: string; follow_up: st
     const { error } = await sb.from('leads').update(patch).eq('id', id);
     if (error) throw new Error(error.message);
     await sb.from('lead_activity').insert({ lead_id: id, company_id: lead.company_id, user_id: uid, kind: 'call', status: input.status, body: clean(input.note) });
+    if (input.status !== lead.status) after(() => writeLeadStatus(id));
     return { ok: true, attempts: patch.attempts, first_called_at: patch.first_called_at, last_called_at: now };
   } catch (e) { return fail(e); }
 }

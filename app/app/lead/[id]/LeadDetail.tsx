@@ -2,7 +2,7 @@
 import { useMemo, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { cleanPhone, fmtPhone, fmtWhen, ago, fmtDay, label, nice, initials, statusOf } from '@/lib/leads';
+import { cleanPhone, fmtPhone, fmtWhen, ago, fmtDay, label, nice, fmtValue, initials, statusOf } from '@/lib/leads';
 import type { Activity, Ctx, Lead } from '@/lib/types';
 import { StatusSelect, CallButtons, avatarBg } from '../../LeadCard';
 import AfterCall from '../../AfterCall';
@@ -92,7 +92,7 @@ export default function LeadDetail({ lead, ctx, activity, names }: { lead: Lead;
       {answers.length > 0 && (
         <div className="card" style={{ marginTop: 10, gap: 0 }}>
           <h3 style={{ fontSize: 16, marginBottom: 6 }}>Form answers</h3>
-          {answers.map(([k, v]) => <div className="ans" key={k}><span>{label(k)}</span><b>{nice(v)}</b></div>)}
+          {answers.map(([k, v]) => <div className="ans" key={k}><span>{label(k)}</span><b>{fmtValue(v)}</b></div>)}
         </div>
       )}
 

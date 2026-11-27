@@ -7,7 +7,35 @@ export const SKIP_COLS = /^(ad_id|ad_name|adset_id|adset_name|campaign_id|form_i
 // Meta's "<test lead: dummy data for ...>" rows.
 export const TEST_LEAD = /^(p:)?<test lead/i;
 // Columns that hold Meta's unique lead id.
-const ID_COL = /^(id|lead_?id)$/i;
+export const ID_COL = /^(id|lead_?id)$/i;
+
+export const NEW_STATUS_HEADER = 'Lead Desk Status';
+
+/**
+ * Where to write each lead's status. Rows are found by Meta's id column, so sorting the sheet is safe.
+ * Leads without an id (hash ids) fall back to their remembered row, but only if the name there still matches.
+ * Returns external_id -> A1 cell, e.g. "Q12". Leads that can't be found safely are left out.
+ */
+export function statusCells(values: string[][], statusHeader: string, leads: { external_id: string; sheet_row: number | null; name: string }[], nameHeader?: string): Map<string, string> {
+  const out = new Map<string, string>();
+  const headers = (values[0] || []).map(h => String(h ?? '').trim());
+  const sc = headers.indexOf(statusHeader);
+  if (sc < 0) return out;
+  const L = col(sc + 1);
+  const idCol = headers.findIndex(h => ID_COL.test(h));
+  const nameCol = nameHeader ? headers.indexOf(nameHeader) : -1;
+  const byId = new Map<string, number>();
+  if (idCol > -1) values.forEach((r, i) => { if (i > 0 && r?.[idCol]) byId.set(String(r[idCol]).trim(), i + 1); });
+  for (const l of leads) {
+    let row = byId.get(l.external_id);
+    if (!row && l.sheet_row && l.sheet_row > 1 && nameCol > -1) {
+      const cell = String(values[l.sheet_row - 1]?.[nameCol] ?? '').trim();
+      if (cell && cell === l.name) row = l.sheet_row;
+    }
+    if (row) out.set(l.external_id, `${L}${row}`);
+  }
+  return out;
+}
 
 // 1 -> A, 27 -> AA
 export function col(n: number): string {

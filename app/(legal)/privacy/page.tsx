@@ -3,7 +3,7 @@ import Link from 'next/link';
 export const metadata = { title: 'Privacy policy · Lead Desk' };
 
 const CONTACT = process.env.NEXT_PUBLIC_CONTACT_EMAIL || '';
-const UPDATED = '27 November 2026';
+const UPDATED = '28 November 2026';
 
 export default function Privacy() {
   return (
@@ -24,7 +24,7 @@ export default function Privacy() {
         </ul>
 
         <h2>Google user data</h2>
-        <p>If you use “Connect Google”, we ask for the <code>drive.file</code> permission. It only lets Lead Desk open the spreadsheet you choose in the Google Picker, not the rest of your Drive. We use that access only to read the sheet’s rows and show them to your team as leads. We never write to, share or delete your files.</p>
+        <p>If you use “Connect Google”, we ask for the <code>drive.file</code> permission. It only lets Lead Desk open the spreadsheet you choose in the Google Picker, not the rest of your Drive. We use that access only to read the sheet’s rows and show them to your team as leads, and, if a company owner turns on “Save status into the sheet”, to write each lead’s status into the one column they choose. We never share or delete your files or change any other part of them.</p>
         <p>Lead Desk’s use and transfer of information received from Google APIs adheres to the <a className="link" href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener noreferrer">Google API Services User Data Policy</a>, including the Limited Use requirements. We don’t use Google user data for advertising, we don’t sell it, and we don’t use it to train AI models. People at BBB Integrated don’t read it unless you ask us to for support, it’s needed for security, or the law requires it.</p>
         <p>The Google access token is stored encrypted. You can remove Lead Desk’s access at any time in your <a className="link" href="https://myaccount.google.com/permissions" target="_blank" rel="noopener noreferrer">Google Account permissions</a>.</p>
 

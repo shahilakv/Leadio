@@ -30,10 +30,5 @@ export default async function Leads() {
     );
   }
 
-  return (
-    <>
-      {header}
-      <LeadsView initial={leads} ctx={ctx} syncError={sources.find(s => s.last_error)?.last_error || ''} truncated={leads.length >= LEAD_LIMIT} />
-    </>
-  );
+  return <LeadsView company={company.name} initial={leads} ctx={ctx} syncError={sources.find(s => s.last_error)?.last_error || ''} truncated={leads.length >= LEAD_LIMIT} />;
 }

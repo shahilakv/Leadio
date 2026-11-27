@@ -1,5 +1,6 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import SheetPicker, { useSheetFilter } from './SheetPicker';
 import { useRouter } from 'next/navigation';
 import { STATUSES, NOTCONN, WARM, ymd, cleanPhone } from '@/lib/leads';
 import type { Ctx, Lead } from '@/lib/types';
@@ -21,10 +22,13 @@ const CHIPS = [
 ];
 const VIEW = (k: string) => TILES.find(x => x.k === k) || CHIPS.find(x => x.k === k) || CHIPS[0];
 
-export default function LeadsView({ initial, ctx, syncError, truncated }: { initial: Lead[]; ctx: Ctx; syncError: string; truncated: boolean }) {
+export default function LeadsView({ initial, ctx, syncError, truncated, company }: { initial: Lead[]; ctx: Ctx; syncError: string; truncated: boolean; company: string }) {
   const router = useRouter();
   const L = useLeads(initial);
-  const { leads } = L;
+  const sources = useMemo(() => Object.values(ctx.sources), [ctx.sources]);
+  const [sheet, setSheet] = useSheetFilter(sources);
+  const counts = useMemo(() => L.leads.reduce<Record<string, number>>((m, l) => { m[l.source_id] = (m[l.source_id] || 0) + 1; return m; }, {}), [L.leads]);
+  const leads = sheet ? L.leads.filter(l => l.source_id === sheet) : L.leads;
   const [filter, setFilter] = useState(() => (initial.some(isToday) ? 'today' : initial.some(TILES[1].f) ? 'notconn' : 'all'));
   const [q, setQ] = useState('');
   const [syncErr, setSyncErr] = useState(syncError);
@@ -58,10 +62,14 @@ export default function LeadsView({ initial, ctx, syncError, truncated }: { init
     ? leads.filter(l => [l.name, l.phone, l.campaign, ...Object.values(l.fields || {})].join(' ').toLowerCase().includes(query))
     : inView;
   const next = shown.find(l => NOTCONN.includes(l.status) && cleanPhone(l.phone, ctx.countryCode));
-  const sheetLead = L.sheet ? leads.find(l => l.id === L.sheet!.id) || null : null;
+  const sheetLead = L.sheet ? L.leads.find(l => l.id === L.sheet!.id) || null : null;
 
   return (
     <>
+      <div className="hd">
+        <div className="grow"><div className="lbl">Company</div><div className="h1">{company}</div></div>
+        <SheetPicker sources={sources} value={sheet} onChange={setSheet} counts={counts} />
+      </div>
       {syncErr && <p className="note" role="status">Couldn’t fetch new leads: {syncErr}</p>}
       <div className="tiles">
         {TILES.map(t => (
