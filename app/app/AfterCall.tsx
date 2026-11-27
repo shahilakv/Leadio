@@ -60,19 +60,44 @@ export default function AfterCall({ lead, secs, countryCode, onSave, onClose, sa
   // Rendered into <body> through a portal, so no animated/transformed parent can move this fixed sheet.
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  // While the sheet is open the page behind it can't scroll or bounce (feels like a native app).
+  // While the sheet is open the page behind it is pinned in place (position:fixed on <body>).
+  // overflow:hidden alone isn't enough on iPhone: drags still move the page and the address bar,
+  // which shifts the sheet.
+  const open = !!lead;
   useEffect(() => {
-    if (!lead) return;
+    if (!open) return;
+    const y = window.scrollY, b = document.body.style;
+    const prev = { position: b.position, top: b.top, left: b.left, right: b.right, width: b.width };
     document.documentElement.classList.add('locked');
-    return () => document.documentElement.classList.remove('locked');
-  }, [lead]);
+    Object.assign(b, { position: 'fixed', top: `-${y}px`, left: '0', right: '0', width: '100%' });
+    return () => {
+      Object.assign(b, prev);
+      document.documentElement.classList.remove('locked');
+      window.scrollTo(0, y);
+    };
+  }, [open]);
+
+  // After Save the sheet slides away; for a moment an invisible shield catches stray taps so they
+  // can't land on the card underneath (e.g. its WhatsApp button).
+  const [shield, setShield] = useState(false);
+  const wasOpen = useRef(false);
+  useEffect(() => {
+    if (wasOpen.current && !open) {
+      setShield(true);
+      const t = setTimeout(() => setShield(false), 700);
+      wasOpen.current = open;
+      return () => clearTimeout(t);
+    }
+    wasOpen.current = open;
+  }, [open]);
+
   if (!mounted) return null;
   const ready = !!status && status !== 'New';
 
   return createPortal(
     <>
       {/* No closing by tapping outside: a call must get a result, so the lead leaves the Call list. */}
-      <div className={'ov' + (lead ? ' on' : '')} onClick={() => say('Choose how the call went to continue')} />
+      <div className={'ov' + (lead ? ' on' : shield ? ' shield' : '')} onClick={() => { if (lead) say('Choose how the call went to continue'); }} />
       <div className={'sheet withfoot' + (lead ? ' on' : '')} role="dialog" aria-modal="true" aria-label="How did the call go?">
         {lead && (
           <>
