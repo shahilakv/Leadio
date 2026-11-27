@@ -46,7 +46,7 @@ export default function AfterCall({ lead, secs, countryCode, onSave, onClose, sa
   const pickStatus = (k: string) => { setStatus(k); if (k === 'Follow-up' && !fu) setFu(addDays(1)); };
   const save = () => {
     if (!lead) return;
-    if (!status) return say('Pick how the call went');
+    if (!status || status === 'New') return say('Pick how the call went');
     stopMic();
     onSave(lead.id, { status, follow_up: status === 'Follow-up' && !fu ? addDays(1) : fu, note: note.trim() });
   };
@@ -58,7 +58,8 @@ export default function AfterCall({ lead, secs, countryCode, onSave, onClose, sa
 
   return (
     <>
-      <div className={'ov' + (lead ? ' on' : '')} onClick={() => { stopMic(); onClose(); }} />
+      {/* No closing by tapping outside: a call must get a result, so the lead leaves the Call list. */}
+      <div className={'ov' + (lead ? ' on' : '')} onClick={() => say('Choose how the call went to continue')} />
       <div className={'sheet' + (lead ? ' on' : '')} role="dialog" aria-modal="true" aria-label="How did the call go?">
         <div className="grab" />
         {lead && (
@@ -67,9 +68,10 @@ export default function AfterCall({ lead, secs, countryCode, onSave, onClose, sa
               <span className="ended"><PhoneIcon size={13} />Call ended{dur}</span>
               <h2>How did the call go?</h2>
               <p className="sub">{lead.name}{ph ? ' · ' + fmtPhone(ph) : ''}</p>
+              <p className="sub" style={{ marginTop: 4 }}>Choose a result to save and close.</p>
             </div>
             <div className="sgrid">
-              {STATUSES.map(s => (
+              {STATUSES.filter(s => s.k !== 'New').map(s => (
                 <button key={s.k} className={'opt' + (status === s.k ? ' on' : '')} style={{ ['--c' as string]: s.c, ['--t' as string]: s.t }} onClick={() => pickStatus(s.k)}>
                   <i /><span>{s.k}</span>{status === s.k && <b aria-hidden>✓</b>}
                 </button>
@@ -90,7 +92,7 @@ export default function AfterCall({ lead, secs, countryCode, onSave, onClose, sa
                 <button className={'mic' + (rec ? ' rec' : '')} onClick={dictate} aria-label="Speak a note"><MicIcon size={19} /></button>
               </div>
             </div>
-            <button className="btn" onClick={save}>Save</button>
+            <button className="btn" onClick={save} disabled={!status || status === 'New'}>{status && status !== 'New' ? 'Save' : 'Choose a result first'}</button>
           </>
         )}
       </div>

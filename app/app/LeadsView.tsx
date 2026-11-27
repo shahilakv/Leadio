@@ -17,7 +17,10 @@ const TILES = [
   { k: 'notconn', t: 'Not connected', f: (l: Lead) => NOTCONN.includes(l.status), sub: (n: number) => `${n} · new or no answer` },
   { k: 'warm', t: 'Interested', f: (l: Lead) => WARM.includes(l.status), sub: (n: number) => `${n} · interested or visit booked` },
 ];
+// "Call list" = leads nobody has updated yet (status New). Logging a call always sets another status,
+// so a called lead leaves this list. It's the default view.
 const CHIPS = [
+  { k: 'calllist', t: 'Call list', f: (l: Lead) => l.status === 'New', sub: (n: number) => `${n} to call · newest first` },
   { k: 'all', t: 'All leads', f: () => true, sub: (n: number) => `${n} leads · newest first` },
   ...STATUSES.filter(s => !['New', 'No answer', 'Interested'].includes(s.k)).map(s => ({ k: s.k, t: s.k, c: s.c, f: (l: Lead) => l.status === s.k, sub: (n: number) => `${n} lead${n === 1 ? '' : 's'}` })),
 ];
@@ -30,7 +33,7 @@ export default function LeadsView({ initial, ctx, syncError, truncated, company 
   const [sheet, setSheet] = useSheetFilter(sources);
   const counts = useMemo(() => L.leads.reduce<Record<string, number>>((m, l) => { m[l.source_id] = (m[l.source_id] || 0) + 1; return m; }, {}), [L.leads]);
   const leads = sheet ? L.leads.filter(l => l.source_id === sheet) : L.leads;
-  const [filter, setFilter] = useState(() => (initial.some(isToday) ? 'today' : initial.some(TILES[1].f) ? 'notconn' : 'all'));
+  const [filter, setFilter] = useState('calllist');
   const [q, setQ] = useState('');
   const [syncErr, setSyncErr] = useState(syncError);
   const busy = useRef(false);
@@ -98,8 +101,8 @@ export default function LeadsView({ initial, ctx, syncError, truncated, company 
           <LeadCard key={l.id} lead={l} ctx={ctx} onCall={L.markCall} onWa={L.tapWhatsApp} onStatus={L.setStatus} />
         )) : (
           <div className="empty">
-            <b>{query ? 'No match' : filter === 'today' ? 'No new leads today yet' : filter === 'notconn' ? 'Everyone has been reached 🎉' : 'Nothing here'}</b>
-            <p className="sub">{query ? 'Try a name, number or city.' : filter === 'today' ? 'Check “Not connected” for people still waiting for a call.' : 'No leads in this list right now.'}</p>
+            <b>{query ? 'No match' : filter === 'calllist' ? 'Call list done 🎉' : filter === 'today' ? 'No new leads today yet' : filter === 'notconn' ? 'Everyone has been reached 🎉' : 'Nothing here'}</b>
+            <p className="sub">{query ? 'Try a name, number or city.' : filter === 'calllist' ? 'Every lead has been called. New leads from your sheet show up here.' : filter === 'today' ? 'Check “Not connected” for people still waiting for a call.' : 'No leads in this list right now.'}</p>
           </div>
         )}
         {shown.length > 300 && <p className="note">Showing the first 300. Use search or the filters to find others.</p>}

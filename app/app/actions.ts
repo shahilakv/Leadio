@@ -51,7 +51,7 @@ export async function updateLead(id: string, up: { status?: string; follow_up?: 
 export async function logCall(id: string, input: { status: string; follow_up: string | null; note: string }): Promise<Res<{ attempts: number; first_called_at: string; last_called_at: string }>> {
   try {
     const { sb, uid } = await ctx();
-    if (!STATUS_KEYS.includes(input.status)) throw new Error('Pick how the call went');
+    if (!STATUS_KEYS.includes(input.status) || input.status === 'New') throw new Error('Pick how the call went');
     if (!isDate(input.follow_up)) throw new Error('Bad date');
     const lead = await leadRow(sb, id);
     const now = new Date().toISOString();

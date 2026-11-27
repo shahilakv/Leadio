@@ -63,6 +63,7 @@ The full build plan with milestones is in `docs/v3-plan.md`. Milestones 1 (found
 New · No answer · Follow-up · Interested · Visit booked · Converted · Not interested · Wrong number
 (v1's "Rented" became "Converted" for multi-company use.)
 
+- **Call list** (default chip on Leads) = status New. The after-call sheet can't be closed without a result and doesn't offer New (server rejects it too), so every logged call removes the lead from the Call list.
 - **Not connected** = New + No answer
 - **Interested** tile = Interested + Visit booked
 - **Closed** (hidden from follow-ups) = Converted, Not interested, Wrong number
