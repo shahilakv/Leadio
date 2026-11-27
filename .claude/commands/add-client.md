@@ -1,14 +1,12 @@
 ---
-description: Set up Lead Desk for a new client (tab, form columns, WhatsApp message)
-argument-hint: <client name>
+description: Help a new company get set up in Lead Desk
+argument-hint: <company name>
 ---
-Add a new client to Lead Desk: $ARGUMENTS
+Help onboard a company to Lead Desk: $ARGUMENTS
 
-1. Ask me for anything you don't know yet. Ask everything in one go, not one question at a time:
-   - what they sell or rent (it goes into the WhatsApp message)
-   - the Meta form questions, or a screenshot of row 1 of their sheet tab
-   - their country (for `COUNTRY_CODE`)
-2. Tell me to name the sheet tab exactly the client's name. The app picks up new tabs on its own.
-3. Check `detect()` in `src/Index.html` against their headers. Extend the regexes only if a column (name, phone, city, type, campaign, time) wouldn't be found. Don't break the existing Ibna headers.
-4. The WhatsApp text is one `WA_TEXT` today. If this client needs different wording, change it into a per-client map keyed by tab name, with the current text as Ibna's entry, and keep the `{name}`, `{type}`, `{city}` placeholders working.
-5. Run `npm test`, then show me the WhatsApp message as it would read for a sample lead. Don't deploy until I say so.
+Companies sign up themselves now (v3). Help me check that their sheet will work:
+
+1. Ask me for a screenshot or the header row of their sheet, and their country.
+2. Check `guessFieldMap()` in `lib/leads.ts` against the headers. Name and phone must be found. Only extend the regexes if needed, and keep the Ibna/Meta headers working. Add a test case in `tests/leads.test.ts`.
+3. Suggest a WhatsApp message template for them, using `{name}`, `{type}` and `{city}`. They paste it in Settings.
+4. Run `npm test`. Don't commit or push until I say so.

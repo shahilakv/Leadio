@@ -1,84 +1,71 @@
 # Lead Desk
 
-A phone-first web app for calling and messaging Meta (Facebook/Instagram) ad leads. It is built by BBB Integrated. The first client is **Ibna**, a rental apartment. Leads arrive in a Google Sheet. The app shows each lead as a card with Call, WhatsApp and a status dropdown, and writes everything back to the same sheet.
+A phone-first web app for calling and messaging Meta (Facebook/Instagram) ad leads, built by BBB Integrated. **v3 is a multi-company SaaS:** a user signs up (email verification), creates a company, connects the Google Sheet their Meta ads fill, picks which columns show on the lead card, and the team calls leads from cards with Call, WhatsApp and a status. The first company is **Ibna** (rental apartments).
+
+The full build plan with milestones is in `docs/v3-plan.md`. Milestone 1 (foundation) is done.
 
 ## Stack
 
-- **Google Apps Script web app.** No server and no database: the Google Sheet is the database.
-- `src/Code.gs` is the backend. It reads and writes the sheet, and each sheet tab is one client.
-- `src/Index.html` is the whole frontend: plain HTML, CSS and vanilla JS in one file, with no build step and no framework. Keep it that way. Apps Script `HtmlService` serves one HTML file.
-- **clasp** pushes `src/` to Apps Script. `src/appsscript.json` is the manifest.
-- Opened outside Google, Index.html runs in **demo mode** with in-memory sample leads. That's how local preview and the tests work.
+- **Next.js 15** (App Router, TypeScript) on **Vercel**. `git push` to `main` goes live; other branches get preview URLs.
+- **Supabase**: Auth (email + password, email confirmation, reset) and Postgres. The schema is in `supabase/migrations/` (apply it with the Supabase SQL editor or `supabase db push`).
+- **Google Sheets** is read-only input. Leads are synced into Postgres. Call results (status, notes, follow-ups) live **only in the database**, never in the sheet.
+- Tests: **Vitest** (`tests/*.test.ts`) for pure logic.
 
 ## Commands
 
 | Task | Command |
 |---|---|
-| Install tools | `npm install` |
-| Log in to Google (once) | `npm run login` |
-| Preview locally (demo data) | `npm run preview` → http://localhost:3000 |
-| Run tests | `npm test` (Playwright, demo mode, phone viewport) |
-| Push code to Apps Script | `npm run push` |
-| Push + update the live web app (same URL) | `npm run deploy` |
-| Open the script in the browser | `npm run open` |
+| Install | `npm install` |
+| Dev server | `npm run dev` → http://localhost:3000 (needs `.env.local`, see `.env.example`) |
+| Unit tests | `npm test` |
+| Type-check | `npm run typecheck` |
+| Production build | `npm run build` |
 
-`npm run deploy` reads the deployment id from `.deploy.json`. See README.md for first-time setup.
+## Layout
 
-**Vercel is only a short link.** `vercel.json` redirects every path to the Apps Script `/exec` URL (`public/index.html` is a fallback). The app itself never runs on Vercel. If the deployment id ever changes, update the URL in both files.
+- `app/(auth)/`: signup, login, verify, forgot-password, update-password, plus `actions.ts` (server actions) and `AuthForm.tsx`.
+- `app/auth/confirm/route.ts`: landing page for Supabase email links (`?code=` or `?token_hash=&type=`).
+- `app/onboarding/`: create a company (RPC `create_company`).
+- `app/app/`: the signed-in app (Leads, Follow-ups, Stats, Settings). `layout.tsx` sends users with no company to onboarding.
+- `middleware.ts`: refreshes the Supabase session; `/app` and `/onboarding` need sign-in.
+- `lib/supabase/{client,server,admin}.ts`: browser client, server client (acts as the user, RLS applies), service-role client (server only, bypasses RLS).
+- `lib/company.ts`: `myCompanies()`, `activeCompany()` (cookie `ld_company`).
+- `lib/leads.ts`: `STATUSES` and groups, `guessFieldMap()`, phone helpers, `waText()`, date helpers.
+- `lib/sheets/rows.ts`: `rowsToLeads()` (sheet values → leads: skips empty rows, Meta test leads and duplicates; drops Meta bookkeeping columns via `SKIP_COLS`), `parseSheetUrl()`, `col()`.
 
-`.npmrc` sets `node-options=--use-system-ca` so clasp can reach Google when antivirus scans HTTPS ("unable to verify the first certificate").
+## Data and security rules
 
-## How the data works
+- **Every table has Row Level Security** keyed on membership (`is_member()` / `is_owner()`). New tables must get RLS and policies in a new migration. Never edit an applied migration; add `0002_…sql`.
+- Use `supabaseServer()` (user's session) by default. Use `supabaseAdmin()` only for jobs a user can't do (sync inserting leads, encrypted tokens, invites), and always filter by `company_id`.
+- Browsers may only update the call columns of `leads` (column grants in `0001_init.sql`). Leads are inserted by server-side sync only.
+- `source_secrets` (OAuth tokens) has no policies on purpose: service role only.
+- Redirect targets from user input go through `safeNext()` in `lib/site.ts`.
+- Never commit `.env*` files (except `.env.example`), service account keys or Supabase service-role keys.
 
-- **One tab = one client.** Tabs starting with `_` are ignored.
-- Row 1 is headers. Meta's default headers are auto-detected in `detect()` in Index.html: `full_name`, `phone_number` (Meta adds a `p:` prefix, which gets stripped), `created_time`, `campaign_name`, `city`, and any header containing `furnish`. If a client's form uses other headers, extend the regexes in `detect()`. Don't hard-code columns.
-- `getLeads()` in Code.gs sends only the columns the app needs: `SKIP_COLS` drops Meta's ad/form columns (`ad_id`, `ad_name`, `adset_*`, `campaign_id`, `form_*`, `is_organic`, `platform`, `lead_status`). Rows containing Meta's `<test lead: …>` dummy data are skipped. Row numbers stay the real sheet rows.
-- Ibna's sheet (Oct 2026): `id, created_time, …, campaign_name, …, which_type_of_apartment_you_are_looking_for?, full_name, phone_number, city, lead_status`. The demo data uses the same columns.
-- On first load the app adds these columns at the end: `Status | Notes | Follow Up | Attempts | Last Called | First Called`.
-  - `Follow Up` is `YYYY-MM-DD` text, saved as plain text so Sheets doesn't reformat it.
-  - `First Called` is an ISO timestamp, used for the "avg time to first call" stat.
-  - `Notes` is newest first, one entry per line: `26 Nov, 4:50 pm — text`.
-- `updateLead(tab, row, updates, key, val)` re-finds the row by the `id` column if the sheet was sorted in between. Keep that safety check.
-- Phone numbers without a country code get `COUNTRY_CODE` (default `91`, India). Use `971` for UAE clients.
+## Statuses (single source of truth: `STATUSES` in `lib/leads.ts`)
 
-## Statuses (single source of truth: `STATUSES` in Index.html)
-
-New · No answer · Follow-up · Interested · Visit booked · Rented · Not interested · Wrong number
+New · No answer · Follow-up · Interested · Visit booked · Converted · Not interested · Wrong number
+(v1's "Rented" became "Converted" for multi-company use.)
 
 - **Not connected** = New + No answer
 - **Interested** tile = Interested + Visit booked
-- **Closed** (hidden from follow-ups) = Rented, Not interested, Wrong number
-- **Reached** (stats) = Follow-up, Interested, Visit booked, Rented, Not interested
-
-If you rename a status, update `STATUSES`, the group arrays (`NOTCONN`, `WARM`, `CLOSED`, `REACHED`), and the demo data.
-
-## Screens (all in Index.html)
-
-1. **Leads:** filter tiles (Today's leads / Not connected / Interested), status chips, search, "Call next", lead cards.
-2. **Follow-ups:** grouped Overdue / Today / Tomorrow / This week / Later, with a red badge on the tab.
-3. **Stats:** Today / This week / All time; reached %, tiles, status bars, avg time to first call, by campaign.
-4. **Lead detail:** a full-screen page with the phone number, Call and WhatsApp, status, follow-up date, city and type tiles, notes, and all form answers.
-5. **After-call sheet:** opens automatically when the user returns from the phone dialer (`visibilitychange`). It has the status grid, quick follow-up dates, a note box with a mic, and Save.
+- **Closed** (hidden from follow-ups) = Converted, Not interested, Wrong number
+- **Reached** (stats) = Follow-up, Interested, Visit booked, Converted, Not interested
 
 ## Design rules
 
 The Figma source is "Lead Desk – Mobile App": https://www.figma.com/design/HcegiYQJr1VZgukFksDolI
 
-- Font: **Plus Jakarta Sans** (500/600/700/800).
-- Colours: bg `#EDEFF2`, cards `#FFFFFF`, ink `#111114`, muted `#868A94`, soft `#F3F4F6`, **lime `#D7F36B`** = selected/active, pink `#F8DCE5`, lavender `#E4E0FA`, WhatsApp `#1FAF55`. Status colours live in `STATUSES`.
+- Font: **Plus Jakarta Sans** (500/600/700/800), loaded with `next/font`.
+- Colours (tokens in `app/globals.css`): bg `#EDEFF2`, cards `#FFFFFF`, ink `#111114`, muted `#868A94`, soft `#F3F4F6`, **lime `#D7F36B`** = selected/active, pink `#F8DCE5`, lavender `#E4E0FA`, WhatsApp `#1FAF55`.
 - Phone first: one column, max width 480px, tap targets ≥ 44px, inputs 16px (stops iOS zoom), rounded cards (24px), pill buttons.
-- **Keep it simple.** The owner asked for plain, easy-to-understand UI: labelled buttons rather than bare icons, and no extra flows.
-- Every user value goes through `esc()` before it enters HTML.
+- **Keep it simple.** The owner wants plain, easy-to-understand UI: labelled buttons rather than bare icons, and no extra flows.
+- Don't use `alert/confirm/prompt`.
 
-## Gotchas
+## History
 
-- `<base target="_top">` must stay. Without it, `tel:` links don't open the dialer from inside the Apps Script iframe.
-- Apps Script iframes usually block the microphone. `dictate()` tries Web Speech, then falls back to telling the user to use the keyboard mic.
-- **Never write `//` inside a string in the `<script>`.** Apps Script's HtmlService cuts every line at `//`, even inside strings, which kills the whole script (blank UI, no leads). Write URLs as `'https:\/\/…'`. A test checks this.
-- Don't use `alert/confirm/prompt`. Use `toast()` and the bottom sheet.
-- Changing `Code.gs` or `appsscript.json` needs `npm run deploy`. `push` alone doesn't update what users of the /exec URL see.
-- Web app access is "Only myself" (`appsscript.json`). Because it runs as the owner, never switch to `ANYONE` without adding real auth: the link would expose every lead.
+v1 was a Google Apps Script web app and v2 a single-file Vercel app. Both are in git history (before the `v3-saas` branch). The old Apps Script `/exec` link still runs its own copy until it's turned off in Apps Script.
 
 ## Roadmap
 
-See `docs/roadmap.md`.
+See `docs/v3-plan.md` (milestones) and `docs/roadmap.md` (product ideas).

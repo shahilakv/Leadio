@@ -1,9 +1,9 @@
 ---
-description: Test, push and update the live Lead Desk web app
+description: Test and ship Lead Desk to Vercel
 ---
-Deploy Lead Desk:
+Ship Lead Desk:
 
-1. Run `npm test`. If any test fails, stop and show me what broke. Don't deploy.
-2. Run `npm run deploy -- "$ARGUMENTS"`. Use my arguments as the version description, or a short summary of what changed if I gave none.
-3. If it fails because `.clasp.json` or `.deploy.json` is missing, walk me through the matching README step instead of guessing IDs.
-4. Finish with one line: what went live. The URL stays the same.
+1. Run `npm test`, `npm run typecheck` and `npm run build`. If anything fails, stop and show me what broke.
+2. If there's a new file in `supabase/migrations/`, remind me to run it in the Supabase SQL editor **before** the code goes live, and wait for my OK.
+3. Commit with a short message (use my arguments if I gave any: "$ARGUMENTS") and push the current branch. Merging or pushing to `main` goes live on Vercel. Ask before doing that.
+4. Finish with one line: what was pushed and where (preview or live).

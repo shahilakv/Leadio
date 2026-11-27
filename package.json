@@ -1,19 +1,31 @@
 {
   "name": "lead-desk",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "private": true,
-  "description": "Phone-first lead calling app for Meta ad leads, on Google Sheets + Apps Script",
+  "description": "Lead Desk: call and WhatsApp your Meta ad leads. Multi-company SaaS on Next.js, Supabase and Google Sheets.",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "login": "clasp login",
-    "push": "clasp push -f",
-    "deploy": "node scripts/deploy.mjs",
-    "open": "clasp open",
-    "logs": "clasp logs",
-    "preview": "node scripts/preview.mjs",
-    "test": "playwright test"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.119.2",
+    "next": "^15.5.29",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
-    "@google/clasp": "^2.4.2",
-    "@playwright/test": "^1.48.0"
+    "@types/node": "^22.20.7",
+    "@types/react": "^19.3.3",
+    "@types/react-dom": "^19.3.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.7"
   }
 }
