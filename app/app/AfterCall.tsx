@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { STATUSES, cleanPhone, fmtPhone, fmtDay } from '@/lib/leads';
 import type { Lead } from '@/lib/types';
 import { addDays } from './useLeads';
@@ -56,7 +57,12 @@ export default function AfterCall({ lead, secs, countryCode, onSave, onClose, sa
   const ph = lead ? cleanPhone(lead.phone, countryCode) : '';
   const dur = secs > 4 ? ` · ${Math.floor(secs / 60) ? Math.floor(secs / 60) + 'm ' : ''}${Math.round(secs % 60)}s` : '';
 
-  return (
+  // Rendered into <body> through a portal, so no animated/transformed parent can move this fixed sheet.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
+
+  return createPortal(
     <>
       {/* No closing by tapping outside: a call must get a result, so the lead leaves the Call list. */}
       <div className={'ov' + (lead ? ' on' : '')} onClick={() => say('Choose how the call went to continue')} />
@@ -96,6 +102,7 @@ export default function AfterCall({ lead, secs, countryCode, onSave, onClose, sa
           </>
         )}
       </div>
-    </>
+    </>,
+    document.body,
   );
 }
