@@ -45,7 +45,7 @@ export default function LeadCard({ lead: l, ctx, onCall, onWa, onStatus }: {
   const when = l.lead_time ? `${fmtWhen(l.lead_time)} · ${ago(l.lead_time)}` : '';
   const meta = [
     l.attempts ? `${l.attempts} call${l.attempts > 1 ? 's' : ''}` : '',
-    l.last_called_at ? 'last ' + ago(l.last_called_at) : '',
+    l.last_called_at ? `last ${l.last_called_by && ctx.team[l.last_called_by] ? 'by ' + ctx.team[l.last_called_by] + ' ' : ''}${ago(l.last_called_at)}` : '',
     l.follow_up ? 'follow up ' + fmtDay(l.follow_up) : '',
   ].filter(Boolean).join(' · ');
   return (

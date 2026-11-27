@@ -12,6 +12,6 @@ export type Source = { id: string; label: string; tab_title: string; field_map: 
 export const SOURCE_COLS = 'id, label, tab_title, field_map, card_fields, last_synced_at, last_error';
 
 // What every lead list needs to draw cards and build WhatsApp links.
-export type Ctx = { template: string; countryCode: string; sources: Record<string, Source> };
+export type Ctx = { template: string; countryCode: string; sources: Record<string, Source>; team: Record<string, string> };
 
 export type Activity = { id: string; kind: 'call' | 'whatsapp' | 'status' | 'note'; status: string | null; body: string; created_at: string; user_id: string };

@@ -57,7 +57,7 @@ export default function LeadDetail({ lead, ctx, activity, names }: { lead: Lead;
           <span className="lbl">Follow up {l.follow_up ? `· ${fmtDay(l.follow_up)}` : ''}</span>
           <input type="date" value={l.follow_up || ''} onChange={e => L.setFollowUp(l.id, e.target.value || null)} />
         </label>
-        {l.attempts > 0 && <p className="sub">{l.attempts} call{l.attempts > 1 ? 's' : ''}{l.last_called_at ? ` · last ${ago(l.last_called_at)}` : ''}</p>}
+        {l.attempts > 0 && <p className="sub">{l.attempts} call{l.attempts > 1 ? 's' : ''}{l.last_called_at ? ` · last ${l.last_called_by && ctx.team[l.last_called_by] ? 'by ' + ctx.team[l.last_called_by] + ' ' : ''}${ago(l.last_called_at)}` : ''}</p>}
       </div>
 
       {(map.city || map.type || l.campaign) && (
