@@ -3,6 +3,7 @@ import { activeCompany } from '@/lib/company';
 import { currentUser, supabaseServer } from '@/lib/supabase/server';
 import { ago } from '@/lib/leads';
 import { signOut } from '../../(auth)/actions';
+import CompanyForm from './CompanyForm';
 
 export const metadata = { title: 'Settings · Lead Desk' };
 export const dynamic = 'force-dynamic';
@@ -19,6 +20,8 @@ export default async function Settings() {
         <div><span className="lbl">Company</span><b>{company!.name}</b> <span className="sub">· you are {owner ? 'the owner' : 'a caller'}</span></div>
         <div><span className="lbl">Signed in as</span><b>{user?.email}</b></div>
       </div>
+
+      <CompanyForm name={company!.name} template={company!.whatsapp_template} countryCode={company!.country_code} owner={owner} />
 
       <div className="card" style={{ marginTop: 10 }}>
         <span className="lbl" style={{ margin: 0 }}>Connected sheets</span>

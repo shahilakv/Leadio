@@ -2,7 +2,7 @@
 
 A phone-first web app for calling and messaging Meta (Facebook/Instagram) ad leads, built by BBB Integrated. **v3 is a multi-company SaaS:** a user signs up (email verification), creates a company, connects the Google Sheet their Meta ads fill, picks which columns show on the lead card, and the team calls leads from cards with Call, WhatsApp and a status. The first company is **Ibna** (rental apartments).
 
-The full build plan with milestones is in `docs/v3-plan.md`. Milestones 1 (foundation) and 2 (connect a sheet by URL, field picker, sync, lead cards) are done.
+The full build plan with milestones is in `docs/v3-plan.md`. Milestones 1 (foundation), 2 (connect a sheet by URL, field picker, sync, lead cards) and 3 (calling workflow: statuses, after-call sheet, notes/history, lead detail, follow-ups, stats, company settings) are done. Next: 4 (team invites).
 
 ## Stack
 
@@ -33,6 +33,9 @@ The full build plan with milestones is in `docs/v3-plan.md`. Milestones 1 (found
 - `lib/leads.ts`: `STATUSES` and groups, `guessFieldMap()`, phone helpers, `waText()`, date helpers.
 - `app/onboarding/sheet/`: connect a sheet by URL (`checkSheet` → `inspectTab` → field-picker pop-up → `connectSheet`). Owner only.
 - `app/app/LeadsView.tsx`: tiles, chips, search, lead cards (Call / WhatsApp). Calls `POST /api/sync` on open and every 60s.
+- `app/app/actions.ts`: `updateLead`, `logCall`, `addNote`, `logWhatsApp`, `updateCompany` (server actions as the user; RLS + column grants apply). Every call/status/note/WhatsApp tap adds a `lead_activity` row.
+- `app/app/useLeads.ts`: optimistic lead state + the call flow (tap Call → dialer → on return, `AfterCall.tsx` asks "How did the call go?"). Used by Leads, Follow-ups and the lead detail page. `LeadCard.tsx` holds the card, `StatusSelect` and `CallButtons`.
+- `lib/tz.ts`: server "today" in `Asia/Kolkata` (Vercel runs in UTC). Make it per company when non-India companies join.
 - `lib/google/sheets.ts`: Sheets API as the robot service account (`GOOGLE_SERVICE_ACCOUNT_JSON`, read-only scope). Companies share their sheet with `robotEmail()` as Viewer.
 - `lib/sync.ts`: `syncSource()` upserts sheet rows into `leads` by `(source_id, external_id)`, writing only sheet-derived columns so call results survive. Skips a source synced in the last 45s.
 - `lib/sheets/rows.ts`: `rowsToLeads()` (sheet values → leads: skips empty rows, Meta test leads and duplicates; drops Meta bookkeeping columns via `SKIP_COLS`), `parseSheetUrl()`, `col()`.

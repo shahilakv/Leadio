@@ -91,7 +91,62 @@ export function fmtWhen(s: unknown): string {
   if (d.getFullYear() !== new Date().getFullYear()) o.year = 'numeric';
   return d.toLocaleString('en-IN', o);
 }
-export const statusOf = (s: string) => STATUSES.find(x => x.k === s) ?? { k: s, c: '#6F737C', t: '#ECEDF0' };
+// "Today", "Tomorrow", "Yesterday" or "Mon, 30 Nov" for a YYYY-MM-DD date.
+export function fmtDay(s: string | null | undefined, now = new Date()): string {
+  if (!s) return '';
+  const day = (n: number) => { const d = new Date(now); d.setDate(d.getDate() + n); return ymd(d); };
+  if (s === day(0)) return 'Today';
+  if (s === day(1)) return 'Tomorrow';
+  if (s === day(-1)) return 'Yesterday';
+  const d = parseDate(s + 'T00:00');
+  return d ? d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' }) : s;
+}
+
+// Follow-ups screen groups. Closed leads (Converted, Not interested, Wrong number) are left out.
+export const FOLLOW_GROUPS = ['Overdue', 'Today', 'Tomorrow', 'This week', 'Later'] as const;
+export function followGroup(followUp: string, now = new Date()): typeof FOLLOW_GROUPS[number] {
+  const day = (n: number) => { const d = new Date(now); d.setDate(d.getDate() + n); return ymd(d); };
+  if (followUp < day(0)) return 'Overdue';
+  if (followUp === day(0)) return 'Today';
+  if (followUp === day(1)) return 'Tomorrow';
+  if (followUp <= day(7)) return 'This week';
+  return 'Later';
+}
+
+// Numbers for the Stats screen, over the leads that came in during the period.
+export type StatLead = { status: string; lead_time: string | null; first_called_at: string | null; campaign: string };
+export function stats(leads: StatLead[]) {
+  const total = leads.length;
+  const reached = leads.filter(l => REACHED.includes(l.status)).length;
+  const byStatus = STATUSES.map(s => ({ ...s, n: leads.filter(l => l.status === s.k).length }));
+  const waits = leads
+    .map(l => (l.first_called_at && l.lead_time ? (+new Date(l.first_called_at) - +new Date(l.lead_time)) / 60000 : null))
+    .filter((m): m is number => m !== null && m >= 0);
+  const avgFirstCallMins = waits.length ? Math.round(waits.reduce((a, b) => a + b, 0) / waits.length) : null;
+  const camps = new Map<string, { leads: number; reached: number; converted: number }>();
+  for (const l of leads) {
+    const k = l.campaign || 'No campaign';
+    const c = camps.get(k) || { leads: 0, reached: 0, converted: 0 };
+    c.leads++; if (REACHED.includes(l.status)) c.reached++; if (l.status === 'Converted') c.converted++;
+    camps.set(k, c);
+  }
+  return {
+    total, reached, reachedPct: total ? Math.round((reached / total) * 100) : 0,
+    notConnected: leads.filter(l => NOTCONN.includes(l.status)).length,
+    warm: leads.filter(l => WARM.includes(l.status)).length,
+    converted: leads.filter(l => l.status === 'Converted').length,
+    byStatus, avgFirstCallMins,
+    campaigns: [...camps.entries()].map(([name, v]) => ({ name, ...v })).sort((a, b) => b.leads - a.leads),
+  };
+}
+export function fmtMins(m: number | null): string {
+  if (m === null) return '—';
+  if (m < 60) return `${m} min`;
+  if (m < 1440) return `${Math.floor(m / 60)}h ${m % 60}m`;
+  return `${Math.round(m / 1440)} days`;
+}
+
+export const statusOf =(s: string) => STATUSES.find(x => x.k === s) ?? { k: s, c: '#6F737C', t: '#ECEDF0' };
 export const initials = (n: string) => n.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase() || '?';
 
 export function ago(s: unknown, now = Date.now()): string {

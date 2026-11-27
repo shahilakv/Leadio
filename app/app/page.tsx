@@ -1,24 +1,14 @@
 import Link from 'next/link';
 import { activeCompany } from '@/lib/company';
-import { supabaseServer } from '@/lib/supabase/server';
-import LeadsView, { type Lead, type Source } from './LeadsView';
+import { loadCtx, loadLeads, LEAD_LIMIT } from '@/lib/loadLeads';
+import LeadsView from './LeadsView';
 
 export const metadata = { title: 'Leads · Lead Desk' };
 export const dynamic = 'force-dynamic';
 
-const LIMIT = 3000;
-
 export default async function Leads() {
   const company = (await activeCompany())!;
-  const sb = await supabaseServer();
-  const [{ data: sources }, { data: leads }] = await Promise.all([
-    sb.from('sheet_sources').select('id, label, tab_title, field_map, card_fields, last_synced_at, last_error').eq('company_id', company.id).order('created_at'),
-    sb.from('leads')
-      .select('id, source_id, name, phone, lead_time, campaign, fields, status, follow_up, attempts, last_called_at')
-      .eq('company_id', company.id)
-      .order('lead_time', { ascending: false, nullsFirst: false })
-      .limit(LIMIT),
-  ]);
+  const [{ ctx, sources }, leads] = await Promise.all([loadCtx(company), loadLeads(company.id)]);
 
   const header = (
     <div className="hd">
@@ -26,7 +16,7 @@ export default async function Leads() {
     </div>
   );
 
-  if (!sources?.length) {
+  if (!sources.length) {
     return (
       <>
         {header}
@@ -43,13 +33,7 @@ export default async function Leads() {
   return (
     <>
       {header}
-      <LeadsView
-        leads={(leads ?? []) as Lead[]}
-        sources={sources as Source[]}
-        template={company.whatsapp_template}
-        countryCode={company.country_code}
-        truncated={(leads?.length ?? 0) >= LIMIT}
-      />
+      <LeadsView initial={leads} ctx={ctx} syncError={sources.find(s => s.last_error)?.last_error || ''} truncated={leads.length >= LEAD_LIMIT} />
     </>
   );
 }
