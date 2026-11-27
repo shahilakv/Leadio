@@ -1,4 +1,4 @@
--- Background sync: every 2 minutes, Supabase calls Lead Desk's /api/cron/sync, so new sheet rows
+-- Background sync: every minute, Supabase calls Lead Desk's /api/cron/sync, so new sheet rows
 -- arrive even when nobody has the app open. Run this ONCE in Supabase → SQL Editor.
 -- (Not a migration: it holds your app's URL and creates a secret.)
 --
@@ -13,7 +13,10 @@ where not exists (select 1 from vault.secrets where name = 'lead_desk_cron_secre
 select cron.unschedule('lead-desk-sync') where exists (select 1 from cron.job where jobname = 'lead-desk-sync');
 select cron.schedule(
   'lead-desk-sync',
-  '*/2 * * * *',
+  -- Every minute: pg_net sometimes hits "Error in the HTTP2 framing layer" when it reuses a
+  -- connection Vercel already closed, so roughly every other call fails. Every minute keeps
+  -- the connection warm and still gives a successful sync at least every 2 minutes.
+  '* * * * *',
   $$
   select net.http_post(
     url := 'https://leadio-one.vercel.app/api/cron/sync',
